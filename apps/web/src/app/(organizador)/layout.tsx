@@ -4,7 +4,7 @@ export default function OrganizadorLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="ctx-organizador min-h-screen bg-background text-foreground">
+    <div className="ctx-organizador min-h-screen bg-backdrop text-foreground">
       {children}
     </div>
   )
