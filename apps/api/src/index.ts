@@ -1,0 +1,42 @@
+import 'dotenv/config'
+import { serve } from '@hono/node-server'
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { db } from './db/index.js'
+import { sql } from 'drizzle-orm'
+
+const app = new Hono()
+
+// CORS — allow requests from Next.js frontend
+app.use(
+  '*',
+  cors({
+    origin: process.env.API_CORS_ORIGIN ?? 'http://localhost:3000',
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  }),
+)
+
+// Health check — verifies DB connectivity with a 3-second timeout
+app.get('/health', async (c) => {
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('DB timeout')), 3000),
+    )
+    await Promise.race([
+      db.execute(sql`SELECT 1`),
+      timeoutPromise,
+    ])
+    return c.json({ status: 'ok', db: 'ok' }, 200)
+  } catch {
+    return c.json({ status: 'degraded', db: 'error' }, 503)
+  }
+})
+
+const port = Number(process.env.PORT ?? 3001)
+console.log(`API running on http://localhost:${port}`)
+
+serve({ fetch: app.fetch, port })
+
+export default app
