@@ -25,6 +25,10 @@
     "db:studio": {
       "cache": false,
       "persistent": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "cache": true
     }
   }
 }
