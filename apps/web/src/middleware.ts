@@ -1,6 +1,16 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Path prefixes that require an authenticated organizador session.
+//
+// IMPORTANT: Next.js route groups like `(organizador)` are stripped from
+// the actual request pathname — a browser never sends `/(organizador)/...`,
+// it sends `/eventos`, `/foo`, etc. So matching against the group name is
+// dead code and would silently fail to protect a route. Every new
+// organizer-only page added under `src/app/(organizador)/` must have its
+// path prefix added here explicitly.
+const PROTECTED_PREFIXES = ['/eventos']
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -36,12 +46,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Protect the organizador panel
-  if (pathname.startsWith('/eventos') || pathname.startsWith('/(organizador)')) {
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
-    }
+  const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix),
+  )
+  if (isProtectedRoute && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
