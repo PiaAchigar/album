@@ -16,5 +16,8 @@ dist
 .DS_Store
 *.tsbuildinfo
 
+# Next.js
+next-env.d.ts
+
 # Drizzle
 packages/database/migrations/*.sql

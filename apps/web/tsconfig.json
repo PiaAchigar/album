@@ -4,15 +4,36 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "preserve",
-    "lib": ["ES2022", "dom", "dom.iterable"],
+    "lib": [
+      "ES2022",
+      "dom",
+      "dom.iterable"
+    ],
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "outDir": ".next"
+    "outDir": ".next",
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
