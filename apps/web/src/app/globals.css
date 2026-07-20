@@ -42,3 +42,15 @@
   --accent: 322 93% 91%;          /* pale pink #fbcfe8 */
   --accent-foreground: 222.2 47.4% 11.2%;
 }
+
+/* Organizador context override — applies when ancestor has .ctx-organizador */
+.ctx-organizador {
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --background: 0 0% 100%;
+  --color-primary: #1E293B;
+  --color-primary-foreground: #ffffff;
+  --color-background: #ffffff;
+  --color-muted: #64748B;
+  --color-border: #E2E8F0;
+}
