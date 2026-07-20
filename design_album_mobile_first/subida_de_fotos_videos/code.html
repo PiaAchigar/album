@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:ital,wght@0,700;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#0b1c30",
+                    "outline": "#75777d",
+                    "on-tertiary-fixed-variant": "#5c3d51",
+                    "on-surface-variant": "#45474c",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed": "#d8e3fb",
+                    "on-secondary-fixed": "#241a00",
+                    "background": "#f8f9ff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#d3e4fe",
+                    "outline-variant": "#c5c6cd",
+                    "secondary": "#735c00",
+                    "on-secondary-container": "#745c00",
+                    "tertiary-fixed-dim": "#e5bad3",
+                    "on-tertiary-container": "#ab859c",
+                    "secondary-container": "#fed65b",
+                    "primary-fixed-dim": "#bcc7de",
+                    "surface-dim": "#cbdbf5",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "inverse-primary": "#bcc7de",
+                    "surface-variant": "#d3e4fe",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#545f73",
+                    "inverse-surface": "#213145",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-fixed": "#ffe088",
+                    "surface-container-high": "#dce9ff",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#1e293b",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#2c1325",
+                    "on-secondary-fixed-variant": "#574500",
+                    "on-surface": "#0b1c30",
+                    "surface-bright": "#f8f9ff",
+                    "tertiary-container": "#3b2032",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#e5eeff",
+                    "surface": "#f8f9ff",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-primary-container": "#8590a6",
+                    "tertiary": "#240b1d",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#111c2d",
+                    "tertiary-fixed": "#ffd8ed",
+                    "primary": "#091426"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "stack-sm": "12px",
+                    "gutter-grid": "8px",
+                    "stack-md": "24px",
+                    "touch-target-min": "48px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "display-festive": ["Playfair Display"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .mosaic-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .mosaic-item-large {
+            grid-row: span 2;
+            grid-column: span 1;
+        }
+        .glass-nav {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
+<!-- Top App Bar (Guest Style) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target-min bg-surface/80 backdrop-blur-md shadow-sm">
+<button class="flex items-center justify-center w-10 h-10 active:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-secondary">close</span>
+</button>
+<h1 class="font-display-festive text-display-festive text-secondary text-2xl">Our Special Day</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="mt-20 px-margin-mobile">
+<!-- Progress / Counters Section -->
+<section class="mb-stack-md space-y-4">
+<div class="bg-surface-container p-4 rounded-xl shadow-sm border border-outline-variant/30">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Fotos</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">3 de 10 fotos usadas</span>
+</div>
+<div class="w-full bg-outline-variant rounded-full h-1">
+<div class="bg-secondary-container h-1 rounded-full transition-all duration-1000" style="width: 30%;"></div>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl shadow-sm border border-outline-variant/30">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Videos</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">1 de 2 videos usados</span>
+</div>
+<div class="w-full bg-outline-variant rounded-full h-1">
+<div class="bg-secondary-container h-1 rounded-full transition-all duration-1000" style="width: 50%;"></div>
+</div>
+</div>
+</section>
+<!-- Action Buttons Section -->
+<section class="grid grid-cols-2 gap-4 mb-stack-md">
+<button class="flex flex-col items-center justify-center gap-2 h-32 bg-secondary text-on-secondary rounded-2xl shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl">photo_camera</span>
+<span class="font-label-sm text-label-sm">Sacar foto</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 h-32 bg-surface-container-high text-secondary border-2 border-secondary-container rounded-2xl shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl">collections</span>
+<span class="font-label-sm text-label-sm">Elegir de galería</span>
+</button>
+</section>
+<!-- Uploaded Items Grid -->
+<section>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background mb-4">Tus Recuerdos</h2>
+<div class="mosaic-grid">
+<!-- Large Vertical Photo -->
+<div class="mosaic-item-large relative rounded-xl overflow-hidden shadow-md group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A vertical, elegant wedding photo of a bride's lace dress detail, captured in soft, warm golden hour lighting. The atmosphere is celebratory and sophisticated, featuring a palette of cream, gold, and soft pink. High-end editorial photography style with a shallow depth of field, highlighting the intricate textures of the fabric." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC_1bD0WiIbB0xaNrxkzChPqAwQKovsh9wiX6fSqgjDloVKu9-l7ypgu-jKPWb35n5yaHrO-YqgXJL5hOFMKxl6bZD6kcjT8p0s9CSK1OY3x_CiqfvjMawol9sxrgAlQl4yv59SwKEnWQJ6hcIDyGxdTmLYlRIgaVJPyFHY8QNKcm6BmN-e8L0cn_yBYePlXwSL3wzBO6Aw3t48-N3WxTwpi3cHIWQClDAoy1b3ZYUSf_Zhwg79MKeb')"></div>
+<div class="absolute top-2 right-2 bg-black/40 backdrop-blur-md rounded-full p-1 text-white">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+</div>
+<!-- Small Photo 1 -->
+<div class="aspect-square relative rounded-xl overflow-hidden shadow-md group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A close-up shot of two crystal champagne flutes clinking at a festive wedding reception. The background is filled with soft, bokeh-blurred warm fairy lights. The color palette is rich with gold and amber tones, evoking a sense of luxury and joy. Professional lifestyle photography with a vibrant, celebratory mood." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAgt2K7tjEaFWTYvSPZ5qvrBHEg0a9eLtGlkJlrE7w4Dgo-ulLsK0Py0ec5vEI9DyT37cIX0a5fE5Cl2MJfYsK4pgof3ZNqmrZRJPRA2RvlMeK07d9RZo7xedPi8VHw0nNbsF8KP99XO1lEX5Ktm777Sb3_PbtQWfDXu5Km4zs-SKUd1A6okcgwIXb5_ug6saDxtu34kmR2xhHdU4KVtA56jFRVd3rJRIY28rbv7p1KtTdyV2S_o58i')"></div>
+<div class="absolute top-2 right-2 bg-black/40 backdrop-blur-md rounded-full p-1 text-white">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+</div>
+<!-- Small Photo 2 (Video Placeholder) -->
+<div class="aspect-square relative rounded-xl overflow-hidden shadow-md group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A festive outdoor wedding dance floor at night, captured in a candid and energetic style. Guests are blurred in movement under string lights, creating a sense of dynamic celebration. The lighting is warm and ambient with deep blue night sky accents. The overall aesthetic is joyful, high-contrast, and elegant." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuArajJIri53LGe2xC-YVt9ZH7Q_RyX6ixB1d4ZU_vjWfQY_y8Z0epuKw7W8JArkkyYz5PJF6F2jjrm6k2cLVeLeJ5k-SJwZ4uKnatMfL59_-Sv1zb8rHfSF68cKEzTE9HCmofL58MrPgh7yWc6Ll0I58Wjx8LRpul_2ii3ZOgEXwDGA_kGQUdR9sO1Xnd5duAe9iVqM4weOhCUWS0yRHnsbZwlSLcBf8hRrVMG5YzqGxFyKiZ-KmwG4')"></div>
+<div class="absolute inset-0 flex items-center justify-center bg-black/20">
+<span class="material-symbols-outlined text-white text-4xl" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<div class="absolute top-2 right-2 bg-black/40 backdrop-blur-md rounded-full p-1 text-white">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+</div>
+<!-- Row spanning photo -->
+<div class="col-span-2 h-40 relative rounded-xl overflow-hidden shadow-md group mt-2">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A wide-angle, panoramic shot of a beautifully decorated wedding banquet hall. Long wooden tables are adorned with eucalyptus runners and flickering white candles. The lighting is soft and romantic, with a palette of forest green, gold, and clean white. The atmosphere is one of sophisticated, high-end celebration and elegance." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDaY0k4sNAY0CuyP3pqPyxO0kQeQtG1hvfNOI_wjn7EY4tVtxqwclPqQ7BF6OWNMMvNJsZyxV8ONE_Mgr8wr2c7rK33yArQeikBNXJiDC_IWFhlRK7T4LiQtHOjRzAsv7BGUJldafguuR8DC8eEz_BzL-swbWO2_t0IpnUW5ZA505SeaE4YUz58lnPzNbeTNASRot7C6n1yUakbDj0QPB-wjKv_bdnCDYevFPVLjMymBTkABEVHXJWl')"></div>
+<div class="absolute top-2 right-2 bg-black/40 backdrop-blur-md rounded-full p-1 text-white">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Guest Style) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface/80 backdrop-blur-md rounded-t-xl shadow-[0_-4px_10px_rgba(115,92,0,0.1)] glass-nav">
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:text-secondary active:scale-110 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex items-center justify-center bg-secondary-container text-on-secondary-container rounded-full w-14 h-14 shadow-md active:scale-110 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add_a_photo</span>
+</a>
+<a class="flex items-center justify-center text-on-surface-variant w-12 h-12 hover:text-secondary active:scale-110 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined">auto_awesome_motion</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const icon = this.querySelector('.material-symbols-outlined');
+                if(icon) {
+                    icon.style.transform = 'scale(1.2) rotate(5deg)';
+                    setTimeout(() => {
+                        icon.style.transform = 'scale(1) rotate(0deg)';
+                    }, 200);
+                }
+            });
+        });
+
+        // Simple scroll reveal for mosaic items
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-4');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.mosaic-grid > div').forEach(item => {
+            item.classList.add('opacity-0', 'translate-y-4', 'transition-all', 'duration-700', 'ease-out');
+            observer.observe(item);
+        });
+    </script>
+</body></html>

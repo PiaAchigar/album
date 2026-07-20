@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Organizer Login | Album</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#240b1d",
+                      "surface-tint": "#545f73",
+                      "inverse-primary": "#bcc7de",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#fed65b",
+                      "outline": "#75777d",
+                      "on-tertiary-fixed": "#2c1325",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "inverse-surface": "#213145",
+                      "on-tertiary-container": "#ab859c",
+                      "on-surface-variant": "#45474c",
+                      "background": "#f8f9ff",
+                      "on-secondary-fixed-variant": "#574500",
+                      "tertiary-container": "#3b2032",
+                      "surface": "#f8f9ff",
+                      "secondary-fixed": "#ffe088",
+                      "on-background": "#0b1c30",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "primary-fixed": "#d8e3fb",
+                      "on-primary-fixed": "#111c2d",
+                      "on-secondary-container": "#745c00",
+                      "on-tertiary-fixed-variant": "#5c3d51",
+                      "primary-container": "#1e293b",
+                      "tertiary-fixed-dim": "#e5bad3",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface-variant": "#d3e4fe",
+                      "on-error": "#ffffff",
+                      "primary": "#091426",
+                      "surface-container-low": "#eff4ff",
+                      "on-primary-container": "#8590a6",
+                      "tertiary-fixed": "#ffd8ed",
+                      "surface-dim": "#cbdbf5",
+                      "surface-bright": "#f8f9ff",
+                      "surface-container-high": "#dce9ff",
+                      "secondary-fixed-dim": "#e9c349",
+                      "on-secondary-fixed": "#241a00",
+                      "on-surface": "#0b1c30",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#c5c6cd",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#e5eeff",
+                      "secondary": "#735c00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "stack-md": "24px",
+                      "stack-sm": "12px",
+                      "margin-mobile": "16px",
+                      "gutter-grid": "8px",
+                      "touch-target-min": "48px"
+              },
+              "fontFamily": {
+                      "display-festive": ["Playfair Display"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-primary-fixed-dim selection:text-primary">
+<!-- TopAppBar for Branding context -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-12 h-20 bg-surface/80 backdrop-blur-sm border-b border-outline-variant/30">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="album">album</span>
+<span class="font-headline-lg text-headline-lg text-primary tracking-tight">Album</span>
+</div>
+<div class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center pt-20 px-margin-mobile relative overflow-hidden">
+<!-- Subtle Background Decorative Elements (Organizer Style: Tonal/Minimal) -->
+<div class="absolute top-[-10%] left-[-5%] w-[40%] h-[60%] bg-surface-container-low rounded-full blur-[120px] opacity-50 -z-10"></div>
+<div class="absolute bottom-[-10%] right-[-5%] w-[35%] h-[50%] bg-surface-container-high rounded-full blur-[100px] opacity-40 -z-10"></div>
+<!-- Login Card -->
+<div class="w-full max-w-[480px] bg-white rounded-xl border border-outline-variant shadow-sm p-12 relative overflow-hidden group">
+<!-- Context Indicator -->
+<div class="mb-10 text-center">
+<div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary-container text-on-primary-container mb-4 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-3xl" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Organizer Login</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Access your event management dashboard</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-6" id="loginForm">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-widest" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" data-icon="mail">mail</span>
+<input class="w-full h-touch-target-min pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md text-on-surface outline-none" id="email" name="email" placeholder="name@company.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-widest" for="password">Password</label>
+<a class="font-label-sm text-label-sm text-secondary hover:underline transition-all" href="#">Forgot password?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" data-icon="lock">lock</span>
+<input class="w-full h-touch-target-min pl-12 pr-12 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md text-on-surface outline-none" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" data-icon="visibility" id="pwToggleIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember & Security -->
+<div class="flex items-center">
+<label class="relative flex items-center cursor-pointer group">
+<input class="peer sr-only" id="stayLoggedIn" type="checkbox"/>
+<div class="w-5 h-5 bg-surface-container-lowest border-2 border-outline-variant rounded transition-all peer-checked:bg-primary peer-checked:border-primary"></div>
+<span class="material-symbols-outlined absolute text-[14px] text-white opacity-0 peer-checked:opacity-100 left-0.5" data-icon="check" style="font-variation-settings: 'wght' 700;">check</span>
+<span class="ml-3 font-body-md text-body-md text-on-surface-variant select-none">Stay logged in</span>
+</label>
+</div>
+<!-- Action Button -->
+<button class="w-full h-touch-target-min bg-primary text-on-primary rounded-lg font-label-sm text-label-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 shadow-md" type="submit">
+<span>Enter</span>
+<span class="material-symbols-outlined text-xl" data-icon="login">login</span>
+</button>
+</form>
+<!-- Registration Link -->
+<div class="mt-10 pt-8 border-t border-outline-variant/50 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Don't have an account? 
+                    <a class="text-primary font-bold hover:underline" href="#">Register your agency</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Simple Footer for Desktop -->
+<footer class="py-8 px-12 bg-transparent text-center">
+<p class="font-label-sm text-label-sm text-outline-variant uppercase tracking-tighter">© 2024 Album Event Technologies Inc. • Built for Professionals</p>
+</footer>
+<script>
+        function togglePassword() {
+            const pwInput = document.getElementById('password');
+            const pwIcon = document.getElementById('pwToggleIcon');
+            if (pwInput.type === 'password') {
+                pwInput.type = 'text';
+                pwIcon.textContent = 'visibility_off';
+            } else {
+                pwInput.type = 'password';
+                pwIcon.textContent = 'visibility';
+            }
+        }
+
+        // Add micro-interaction to button
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = form.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin material-symbols-outlined">progress_activity</span> Authenticating...`;
+            
+            setTimeout(() => {
+                btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Redirecting...`;
+                btn.classList.replace('bg-primary', 'bg-secondary');
+            }, 1200);
+        });
+    </script>
+</body></html>

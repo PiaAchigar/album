@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guest Registration - Our Special Day</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Playfair Display & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:ital,wght@0,700;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#0b1c30",
+                    "outline": "#75777d",
+                    "on-tertiary-fixed-variant": "#5c3d51",
+                    "on-surface-variant": "#45474c",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed": "#d8e3fb",
+                    "on-secondary-fixed": "#241a00",
+                    "background": "#f8f9ff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#d3e4fe",
+                    "outline-variant": "#c5c6cd",
+                    "secondary": "#735c00",
+                    "on-secondary-container": "#745c00",
+                    "tertiary-fixed-dim": "#e5bad3",
+                    "on-tertiary-container": "#ab859c",
+                    "secondary-container": "#fed65b",
+                    "primary-fixed-dim": "#bcc7de",
+                    "surface-dim": "#cbdbf5",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "inverse-primary": "#bcc7de",
+                    "surface-variant": "#d3e4fe",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#545f73",
+                    "inverse-surface": "#213145",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-fixed": "#ffe088",
+                    "surface-container-high": "#dce9ff",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#1e293b",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#2c1325",
+                    "on-secondary-fixed-variant": "#574500",
+                    "on-surface": "#0b1c30",
+                    "surface-bright": "#f8f9ff",
+                    "tertiary-container": "#3b2032",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#e5eeff",
+                    "surface": "#f8f9ff",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-primary-container": "#8590a6",
+                    "tertiary": "#240b1d",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#111c2d",
+                    "tertiary-fixed": "#ffd8ed",
+                    "primary": "#091426"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "stack-sm": "12px",
+                    "gutter-grid": "8px",
+                    "stack-md": "24px",
+                    "touch-target-min": "48px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "display-festive": ["Playfair Display"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar and subtle transitions */
+        body { -webkit-tap-highlight-color: transparent; }
+        .glass-header { backdrop-filter: blur(12px); }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar - Guest Context (Filtered from JSON) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target-min bg-surface/80 backdrop-blur-md shadow-sm">
+<button aria-label="Close" class="text-secondary hover:opacity-80 active:opacity-70 transition-opacity p-2">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<h1 class="font-display-festive text-[24px] leading-tight text-secondary">Our Special Day</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="flex-grow flex flex-col pt-16 pb-12 px-margin-mobile animate-fade-in">
+<!-- Hero Decorative Section -->
+<div class="mt-8 mb-10 text-center relative">
+<div class="absolute -top-4 -left-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-secondary" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<h2 class="font-display-festive text-display-festive text-on-surface mb-2">¡Bienvenido!</h2>
+<p class="text-on-surface-variant font-body-md max-w-xs mx-auto">Queremos compartir cada instante contigo. Por favor, completa tus datos para el álbum digital.</p>
+</div>
+<!-- Error State Notification (Friendly Example) -->
+<div class="mb-8 p-4 bg-error-container border border-error/20 rounded-xl flex items-start gap-3 shadow-sm" id="error-banner">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">info</span>
+<div>
+<p class="text-on-error-container font-bold text-label-sm">Cupo de invitados alcanzado</p>
+<p class="text-on-error-container text-sm mt-0.5">Lo sentimos, la lista de invitados para este evento está completa. Contacta al organizador.</p>
+</div>
+</div>
+<!-- Registration Form -->
+<form class="flex flex-col gap-stack-md">
+<!-- Name Input Group -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm text-on-surface-variant px-1 uppercase tracking-widest" for="name">Nombre</label>
+<div class="relative">
+<input class="w-full h-touch-target-min px-4 rounded-xl border-outline-variant bg-surface-container-lowest focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" id="name" placeholder="Ej. Julian" type="text"/>
+</div>
+</div>
+<!-- Last Name Input Group -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-sm text-on-surface-variant px-1 uppercase tracking-widest" for="lastname">Apellido</label>
+<input class="w-full h-touch-target-min px-4 rounded-xl border-outline-variant bg-surface-container-lowest focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" id="lastname" placeholder="Ej. Rodriguez" type="text"/>
+</div>
+<!-- Phone Input Group (Optional) -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center px-1">
+<label class="text-label-sm text-on-surface-variant uppercase tracking-widest" for="phone">Teléfono</label>
+<span class="text-[11px] text-outline italic">Opcional</span>
+</div>
+<input class="w-full h-touch-target-min px-4 rounded-xl border-outline-variant bg-surface-container-lowest focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline/50" id="phone" placeholder="+54 9 11 ..." type="tel"/>
+</div>
+<!-- T&C Checkbox -->
+<div class="flex items-start gap-3 py-2">
+<div class="relative flex items-center">
+<input class="w-6 h-6 rounded border-outline-variant text-secondary focus:ring-secondary-container transition-all bg-surface-container-lowest" id="terms" type="checkbox"/>
+</div>
+<label class="text-sm text-on-surface-variant leading-tight" for="terms">
+                    Acepto los <a class="text-secondary font-bold hover:underline" href="#">Términos y Condiciones</a> y el uso de mis fotos en la galería del evento.
+                </label>
+</div>
+<!-- Action Button -->
+<div class="mt-4">
+<button class="w-full h-touch-target-min bg-secondary text-on-secondary rounded-full font-bold shadow-[0_4px_10px_rgba(115,92,0,0.2)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
+                    Continuar
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Decorative Footer Image / Graphic -->
+<div class="mt-auto pt-12 opacity-40">
+<div class="w-full h-32 rounded-3xl overflow-hidden relative" data-alt="A dreamy, high-end wedding background featuring soft-focus golden champagne bubbles and delicate lace textures. The atmosphere is warm, celebratory, and elegant, with light-mode pastel colors like pale pink and cream. The lighting is ethereal and soft, creating a tactile and premium editorial aesthetic consistent with a luxury wedding app." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3vP2xzYmgZ1gw2dRDdh9E9s5beZI3mBZ7axDExx4U1HCQ2nHJhY_y8kRjCi4BIxqci6DlrhcdXo_xNGjTcY0yu1bo7DJt0nA17OoMWrQQS5de4dJFH1dGcahrKZJK1M3StWoYcOIGbSPvyeGb-0sVuU1h9CFXH3W3Cs-rEKmqNG9vlumrF-zyiSem2N53jd5zJ3ULZljPOExXZSbZXphmKewaZJbtXHEWL4YxobDM6It5O-tDQl_b')">
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation suppressed as per "The Destination Rule" - this is a Task-Focused Registration Screen -->
+<script>
+        // Simple micro-interaction for button and input feedback
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.closest('div').classList.add('scale-[1.01]');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.closest('div').classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Toggle error state visibility for demo
+        setTimeout(() => {
+            const error = document.getElementById('error-banner');
+            error.style.transition = "opacity 0.5s ease-out";
+            // error.style.opacity = "0"; // Example of how to hide it
+        }, 5000);
+    </script>
+</body></html>

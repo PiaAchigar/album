@@ -1,0 +1,254 @@
+<!DOCTYPE html><html lang="en" class="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#5c3d51",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-fixed": "#ffd8ed",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#8590a6",
+                        "tertiary-container": "#3b2032",
+                        "inverse-primary": "#bcc7de",
+                        "outline-variant": "#c5c6cd",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "surface-container-high": "#dce9ff",
+                        "on-surface": "#0b1c30",
+                        "primary-container": "#1e293b",
+                        "secondary": "#735c00",
+                        "on-primary-fixed": "#111c2d",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#545f73",
+                        "on-secondary-container": "#745c00",
+                        "surface-container": "#e5eeff",
+                        "surface-container-low": "#eff4ff",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9ff",
+                        "outline": "#75777d",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-tertiary-fixed": "#2c1325",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-fixed-dim": "#bcc7de",
+                        "secondary-container": "#fed65b",
+                        "primary": "#091426",
+                        "on-tertiary-container": "#ab859c",
+                        "on-surface-variant": "#45474c",
+                        "on-secondary-fixed-variant": "#574500",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-fixed": "#ffe088",
+                        "primary-fixed": "#d8e3fb",
+                        "surface": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "on-background": "#0b1c30",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#e5bad3",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary": "#240b1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "12px",
+                        "touch-target-min": "48px",
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "stack-md": "24px",
+                        "gutter-grid": "8px"
+                    },
+                    "fontFamily": {
+                        "display-festive": ["Playfair Display"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script><meta charset="utf-8"></head><body class="bg-primary overflow-hidden h-screen w-screen selection:bg-secondary/30">
+<!-- Organizer Context - Immersive View -->
+<main class="relative h-full w-full flex flex-col items-center justify-center">
+<!-- Top Controls Overlay -->
+<div class="fixed top-0 left-0 w-full flex justify-between items-center p-stack-md z-50">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-surface-container-highest opacity-70">album</span>
+<span class="font-headline-lg text-headline-lg text-surface-container-lowest font-bold tracking-tight">Album</span>
+</div>
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center rounded-full bg-surface-container-lowest/10 text-surface-container-lowest hover:bg-surface-container-lowest/20 active:scale-95 transition-all duration-150" onclick="window.history.back()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Main Photo Canvas -->
+<div class="relative w-full h-full flex items-center justify-center p-stack-md overflow-hidden" id="slideshow-container">
+<!-- Background Blur for depth -->
+<div class="absolute inset-0 transition-opacity duration-1000 opacity-20 filter blur-3xl scale-110" data-alt="A blurred, abstract representation of a joyful wedding reception with warm golden lights and elegant floral arrangements. The colors are deep and atmospheric, dominated by navy and gold tones, reflecting a premium professional event organizer interface." id="bg-blur" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAA0xX_1heprq-FPxyDXMsR2ujSkhguX6oZfbSKdjPQ9FhkimhEMKW9vwx26BN2_QF9o7eguJroYykI2fN2GuboqLWv40VAvSnQwE4R_kO2Qn2WvgnQbNsum6pgskstMVMkdM8JMB5xAwO9a8RUWO9htuq8sFS4IX9nGahXvJUrou-g9vVWz9qGTQLmADN6yotfPxIMzjG24fI6lZkDDXw-CP1Am6a_HF1nzjDiGydWNqFQgpG_8GJh'); background-size: cover; background-position: center;">
+</div>
+<!-- Current Image-->
+<div class="relative z-10 w-[90vw] h-[90vh] shadow-2xl transition-photo overflow-hidden rounded-lg flex items-center justify-center" id="main-image-wrapper">
+<img class="max-w-full max-h-full object-contain pointer-events-none" data-alt="A high-definition editorial photograph of a newly married couple dancing in a grand ballroom. The lighting is dramatic and moody, focusing on their expressions of joy. The aesthetic is clean, professional, and minimalist, typical of a high-end photography organizer tool in dark mode." id="active-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEYhqSyC6cp1GjrA-YDJek-RiH3JRAQJa1PHct27Dahl-SHy_-DLthK5z_7siJjBgrFJLvMy3Ys5KjEw_QAg0hJAdtp5gFXqp9nzMSUGM7OIalYQHesQXy8-LtWjOebCukNX2lg-bdr9JjC4D1Gzqqo6zkN-05KQoKzzlh1SkHTDPCpyvZvH6CkSkCB3KqOreqUoM3Myiz1DSrzDLbp-BaY8VljbpM-Txx44cmv0P4y0SfGFru45hE">
+</div>
+</div>
+<!-- Bottom Controls & Meta -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex flex-col items-center gap-stack-md pb-12 pt-8 bg-gradient-to-t from-primary via-primary/80 to-transparent">
+<!-- Guest Meta Info -->
+<div class="flex flex-col items-center text-center opacity-0 translate-y-2 transition-all duration-500" id="guest-info">
+<span class="font-label-sm text-label-sm text-on-primary-container tracking-widest uppercase">Uploaded by</span>
+<h3 class="font-headline-lg text-headline-lg text-surface-container-lowest mt-1" id="guest-name">Benjamin Parker</h3>
+</div>
+<!-- Control Bar Cluster -->
+<div class="flex items-center gap-8 px-8 py-3 rounded-full bg-surface-container-lowest/5 backdrop-blur-xl border border-surface-container-lowest/10">
+<!-- Previous Button -->
+<button class="text-surface-container-lowest hover:text-secondary-fixed transition-colors active:scale-90" id="prev-btn">
+<span class="material-symbols-outlined text-[32px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<!-- Play/Pause Button -->
+<button class="w-14 h-14 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center hover:bg-secondary-fixed transition-all active:scale-95 shadow-lg" id="play-pause-btn">
+<span class="material-symbols-outlined text-[36px]" data-icon="pause" id="play-pause-icon">pause</span>
+</button>
+<!-- Next Button -->
+<button class="text-surface-container-lowest hover:text-secondary-fixed transition-colors active:scale-90" id="next-btn">
+<span class="material-symbols-outlined text-[32px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- Global Progress Bar -->
+<div class="w-[300px] h-1 bg-surface-container-lowest/10 rounded-full overflow-hidden mt-2">
+<div class="h-full bg-secondary-fixed w-0 progress-fill" id="timer-bar"></div>
+</div>
+</div>
+</main>
+<script>
+        const photos = [
+            {
+                url: 'placeholder',
+                alt: 'A stunning portrait of a bride and groom during a golden hour sunset in an orchard. The lighting is soft and romantic, with warm golden hues highlighting their silhouettes against the deep green of the trees. The composition is artistic and clean, professional photography grade.',
+                guest: 'Sarah Jenkins'
+            },
+            {
+                url: 'placeholder',
+                alt: 'An elegant, wide-angle shot of a long wedding banquet table decorated with white lilies and tall glass candle holders. The room has high ceilings and a modern architectural feel. The lighting is cool-toned with bright highlights, emphasizing a minimalist and sophisticated organizer persona.',
+                guest: 'Michael Thorne'
+            },
+            {
+                url: 'placeholder',
+                alt: 'A candid black and white photograph of elderly guests laughing together at a wedding reception. The image captures raw emotion and sharp detail in the textures of their formal wear. The style is timeless and editorial, fitting for a professional event archive.',
+                guest: 'Elena Rodriguez'
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = true;
+        let timer;
+        const duration = 5000; // 5 seconds
+
+        const activeImg = document.getElementById('active-image');
+        const bgBlur = document.getElementById('bg-blur');
+        const guestName = document.getElementById('guest-name');
+        const guestInfo = document.getElementById('guest-info');
+        const timerBar = document.getElementById('timer-bar');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+
+        function updateSlide(index) {
+            // Out animation
+            activeImg.style.opacity = '0';
+            activeImg.style.transform = 'scale(1.05)';
+            guestInfo.style.opacity = '0';
+            guestInfo.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                const photo = photos[index];
+                activeImg.src = photo.url;
+                activeImg.setAttribute('data-alt', photo.alt);
+                bgBlur.style.backgroundImage = `url(${photo.url})`;
+                guestName.innerText = photo.guest;
+
+                // In animation
+                activeImg.style.opacity = '1';
+                activeImg.style.transform = 'scale(1)';
+                guestInfo.style.opacity = '1';
+                guestInfo.style.transform = 'translateY(0)';
+                
+                resetTimer();
+            }, 600);
+        }
+
+        function resetTimer() {
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '0%';
+            
+            if(isPlaying) {
+                // Force reflow
+                timerBar.offsetHeight; 
+                timerBar.style.transition = `width ${duration}ms linear`;
+                timerBar.style.width = '100%';
+                
+                clearTimeout(timer);
+                timer = setTimeout(nextSlide, duration);
+            }
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % photos.length;
+            updateSlide(currentIndex);
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+            updateSlide(currentIndex);
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            playPauseIcon.innerText = isPlaying ? 'pause' : 'play_arrow';
+            playPauseIcon.setAttribute('data-icon', isPlaying ? 'pause' : 'play_arrow');
+            
+            if(isPlaying) {
+                resetTimer();
+            } else {
+                clearTimeout(timer);
+                const computedWidth = window.getComputedStyle(timerBar).width;
+                timerBar.style.transition = 'none';
+                timerBar.style.width = computedWidth;
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('next-btn').addEventListener('click', nextSlide);
+        document.getElementById('prev-btn').addEventListener('click', prevSlide);
+        document.getElementById('play-pause-btn').addEventListener('click', togglePlay);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === ' ') {
+                e.preventDefault();
+                togglePlay();
+            }
+            if (e.key === 'Escape') window.history.back();
+        });
+
+        // Initialize
+        window.onload = () => {
+            updateSlide(0);
+        };
+    </script>
+
+</body></html>

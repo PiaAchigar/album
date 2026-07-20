@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Organizer Dashboard | Event Summary</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter for UI, Playfair Display for Festive -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#240b1d",
+                    "surface-tint": "#545f73",
+                    "inverse-primary": "#bcc7de",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#fed65b",
+                    "outline": "#75777d",
+                    "on-tertiary-fixed": "#2c1325",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "inverse-surface": "#213145",
+                    "on-tertiary-container": "#ab859c",
+                    "on-surface-variant": "#45474c",
+                    "background": "#f8f9ff",
+                    "on-secondary-fixed-variant": "#574500",
+                    "tertiary-container": "#3b2032",
+                    "surface": "#f8f9ff",
+                    "secondary-fixed": "#ffe088",
+                    "on-background": "#0b1c30",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "primary-fixed": "#d8e3fb",
+                    "on-primary-fixed": "#111c2d",
+                    "on-secondary-container": "#745c00",
+                    "on-tertiary-fixed-variant": "#5c3d51",
+                    "primary-container": "#1e293b",
+                    "tertiary-fixed-dim": "#e5bad3",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface-variant": "#d3e4fe",
+                    "on-error": "#ffffff",
+                    "primary": "#091426",
+                    "surface-container-low": "#eff4ff",
+                    "on-primary-container": "#8590a6",
+                    "tertiary-fixed": "#ffd8ed",
+                    "surface-dim": "#cbdbf5",
+                    "surface-bright": "#f8f9ff",
+                    "surface-container-high": "#dce9ff",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-secondary-fixed": "#241a00",
+                    "on-surface": "#0b1c30",
+                    "primary-fixed-dim": "#bcc7de",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#c5c6cd",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#e5eeff",
+                    "secondary": "#735c00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "stack-md": "24px",
+                    "stack-sm": "12px",
+                    "margin-mobile": "16px",
+                    "gutter-grid": "8px",
+                    "touch-target-min": "48px"
+            },
+            "fontFamily": {
+                    "display-festive": ["Playfair Display"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-link {
+            @apply bg-primary-container text-on-primary-container font-bold rounded-xl;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- Top Navigation Bar (Shared Component: TopAppBar) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target-min bg-surface dark:bg-surface-container-low border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">menu</span>
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed">Album</h1>
+</div>
+<!-- Desktop Nav Links -->
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary font-bold px-4 py-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">Dashboard</a>
+<a class="text-on-surface-variant px-4 py-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">Gallery</a>
+<a class="text-on-surface-variant px-4 py-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">Guests</a>
+<a class="text-on-surface-variant px-4 py-2 hover:bg-surface-container-high transition-colors rounded-lg" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate event organizer in a clean, modern office setting. The lighting is bright and high-key, with a soft blur on the background containing minimalist office furniture. The image has a cool, professional color palette with deep blues and crisp whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz8tY6VCJpl6ncMYcZGHYPdb5LOQg4rD_T1wNC7b1aX0UYbKJ6_YiFwv9w4Nrafo_joVuhZ4OiargTcOKLQXsPLdqrm2zKJrcU0UUkseQwyPpA2AjSLstJ7ilezto29yztvzCDXrae1JIpsNEL9Q0UVj2ORShUpP8oSYAd7ZXo8kbTg-OGljSW9lmtwS5XYwzbRj3cmYFjlKdvkvLZleD4rpaBuc3-HED83RVh-fCsphr6it_XsshD"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 px-margin-mobile max-w-7xl mx-auto space-y-stack-md">
+<!-- Welcome Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Event Overview</h2>
+<p class="text-on-surface-variant font-body-md">Saturday, August 24 • Grand Wedding Gala</p>
+</div>
+<div class="flex gap-3">
+<button class="h-touch-target-min px-6 rounded-lg bg-surface border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined">share</span>
+<span class="font-label-sm text-label-sm">Share Invite</span>
+</button>
+<button class="h-touch-target-min px-6 rounded-lg bg-primary text-on-primary hover:opacity-90 transition-opacity flex items-center gap-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-sm text-label-sm">New Event</span>
+</button>
+</div>
+</section>
+<!-- Stats Cards: Top Row Bento Style -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter-grid md:gap-stack-md">
+<!-- Registered Guests -->
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl flex items-center justify-between group hover:shadow-sm transition-all">
+<div>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Registered Guests</p>
+<h3 class="text-4xl font-bold text-primary mt-2">248</h3>
+<p class="text-green-600 font-label-sm text-label-sm mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12 today
+                    </p>
+</div>
+<div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+<!-- Photos -->
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl flex items-center justify-between group hover:shadow-sm transition-all">
+<div>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Total Photos</p>
+<h3 class="text-4xl font-bold text-primary mt-2">1,842</h3>
+<p class="text-on-surface-variant font-label-sm text-label-sm mt-1">4.2GB Storage Used</p>
+</div>
+<div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">grid_view</span>
+</div>
+</div>
+<!-- Videos -->
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl flex items-center justify-between group hover:shadow-sm transition-all">
+<div>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Live Videos</p>
+<h3 class="text-4xl font-bold text-primary mt-2">56</h3>
+<p class="text-on-surface-variant font-label-sm text-label-sm mt-1">High resolution</p>
+</div>
+<div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">videocam</span>
+</div>
+</div>
+</section>
+<!-- Main Dashboard Content -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-stack-md">
+<!-- Quick Access & Highlights (Left/Middle Column) -->
+<div class="lg:col-span-8 space-y-stack-md">
+<!-- Quick Access Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="relative group cursor-pointer overflow-hidden rounded-xl h-48 border border-outline-variant">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="A wide angle photo of a luxury wedding reception hall, featuring grand chandeliers, long tables adorned with white floral arrangements and gold cutlery. The lighting is warm and elegant. The perspective is from the entrance looking into the hall, showcasing an expansive, sophisticated celebration environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC15fuu1zsHxxYmsrjFeS6-Gs-zgNG4VaKrHWbTtDodOe-n4xk_Q1QcWcuqYpYqytroVqbQlO3JjEtKV7Sy6bdiBbEi5dyNqc1IXikGhZdpJgSrfeEh26ptg-5AYaPQid6TElcwPPFfcVt1cidxkrqvIQejPlUF6GUnfyyI0XJGeZLF_DabgQgqtjGkbBqJtk_29vGV-GAgqH2T8DjKDdRRpJm5FxWdKSPPiW0ER_GBZDhKs0VNYJVm')"></div>
+<div class="absolute inset-0 bg-primary/60 flex flex-col justify-end p-6">
+<h4 class="text-on-primary font-headline-lg-mobile text-headline-lg-mobile">View Gallery</h4>
+<p class="text-on-primary-container font-body-md">Curate and approve guest uploads</p>
+</div>
+</div>
+<div class="relative group cursor-pointer overflow-hidden rounded-xl h-48 border border-outline-variant">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="A macro shot of elegant wedding invitations laid out on a silk fabric. The invitations have gold foil lettering and are surrounded by sprigs of dried lavender and a wax seal. The atmosphere is tactile and artisanal, emphasizing high-end coordination and attention to detail." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDo9Xwi4XI0mazQ0q5X9DUNyDp-c8KB-cESa8WLfOX5y3RIw9Q8fFOwimWYc_dXE7XJzPq1CjlXoFuc2dlHlIFzuGdA6jewKgqBfKet_UxS0VQvy6lxhlHb0xVAR7AxfvWtFoAl6UQKhg_146WElF9UxuL6Nv8TT5MKlFTK8dzwDqxruHwfY01qEeN3wKnweQcLMvbxcv9nT-s0MRRazjmtnpOxekKNpSDkEZe0ceBGZMexPH4JJi8t')"></div>
+<div class="absolute inset-0 bg-primary/60 flex flex-col justify-end p-6">
+<h4 class="text-on-primary font-headline-lg-mobile text-headline-lg-mobile">Manage Guests</h4>
+<p class="text-on-primary-container font-body-md">Export lists and send notifications</p>
+</div>
+</div>
+</div>
+<!-- Recent Activity Feed -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface">
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Recent Activity</h4>
+<button class="text-secondary font-label-sm text-label-sm hover:underline">View all</button>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Activity Item 1 -->
+<div class="p-6 flex items-start gap-4 hover:bg-surface-container transition-colors">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">image</span>
+</div>
+<div class="flex-1">
+<p class="text-on-surface font-body-md"><strong>Marcus Rivera</strong> uploaded 14 photos to "Ceremony" album.</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm mt-1">2 minutes ago</p>
+<div class="flex gap-2 mt-3">
+<div class="w-12 h-12 rounded bg-surface-container-high border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A candid photograph of a bride laughing during a wedding toast, captured in high detail with natural outdoor lighting. The composition is close-up, focusing on the emotion of the moment, with a soft bokeh background of blurred guests and green foliage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZqLxzQ0-Md28y0QzOuUcOHodw0NMBs9EPkHu_0mB8IFA82s0kVGQNGcRK1ZuOA3tcpRgGaOLYvGVth5c7LNTwQPs5GaupLV6IkUFSUkMA14fyPH4Zbpp0Yi6XsdSEFvRHUvfN-aTuSHglzbgFQ98Yl9AJKEukdZiWMLnytfahnml_SXSB6CCCWMukqX2SN-chsVBDlsuPHBrtxWLfYrGSZsLdoDjFRN7KyW2FePp0qH0EmIb4BL78"/>
+</div>
+<div class="w-12 h-12 rounded bg-surface-container-high border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="An atmospheric evening shot of a wedding venue illuminated by strings of fairy lights against a deep blue dusk sky. The lighting is soft and golden, creating a magical, festive glow over the outdoor patio and furniture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuxHGDFXJ85mNepLK6wzx9bJbl2uhZsQ6Ampvz1Viaj2eMbSZRnLw42ron-leZZCvI-P4gg09jT_TBFkg8ieWO0YCCWpr7uXGvv4x3QLh8iEeFpM3GpebWTYLbIWnqHC1NtPbWCoFRTFD2xuW_OVegiA6qFaOxACPuum9gCANNTSKAr2ETh-uqCBHUIFCCRMaDoClbi-RHcUpm_hi2fiFSuJRsfJ9RDM_hK4CucE-qRsp7DOW_iS47"/>
+</div>
+<div class="w-12 h-12 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm">
+                                        +12
+                                    </div>
+</div>
+</div>
+<button class="p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</div>
+<!-- Activity Item 2 -->
+<div class="p-6 flex items-start gap-4 hover:bg-surface-container transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div class="flex-1">
+<p class="text-on-surface font-body-md"><strong>Sarah Chen</strong> joined the event using Invite Code <strong>W-2024</strong>.</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm mt-1">45 minutes ago</p>
+</div>
+<button class="p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</div>
+<!-- Activity Item 3 -->
+<div class="p-6 flex items-start gap-4 hover:bg-surface-container transition-colors">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-error">report</span>
+</div>
+<div class="flex-1">
+<p class="text-on-surface font-body-md"><strong>System Alert:</strong> Storage is at 85% capacity. Consider upgrading plan.</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm mt-1">1 hour ago</p>
+<button class="mt-2 text-primary font-bold text-sm border border-outline-variant px-3 py-1 rounded hover:bg-surface transition-colors">Upgrade Storage</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar (Right Column) -->
+<div class="lg:col-span-4 space-y-stack-md">
+<!-- Organizer Snapshot -->
+<div class="bg-primary-container text-on-primary-container p-6 rounded-xl border border-outline-variant">
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">Organizer Panel</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm opacity-80">Approval Mode</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</div>
+</div>
+<p class="text-xs opacity-70">Enabling approval mode requires you to manually review all photos before they go public in the guest gallery.</p>
+<div class="pt-4 border-t border-on-primary-container/20">
+<span class="font-label-sm text-label-sm block mb-2">QR Access Code</span>
+<div class="bg-white p-2 rounded-lg inline-block">
+<img class="w-24 h-24" data-alt="A clean, minimalist QR code on a white background with a small Navy Blue logo in the center. The style is professional and crisp, intended for high-quality printing on event collateral like table cards or seating charts." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwpIQujBrfei8j0RHGDlF5SLkQzA3YjvkLSmt-NUQ3WF9UTwIY2qKrhvXG7fSMw5AX1tbHle-CY8g788PRG0zt1R6890zsyxpJOoE4lPrfu11Fu9cX9T7mDiJ7dNeGEzGd6EYtujYnpV3pLfgSOglFpe8ayJo_czUQMuVl0fBYenPh4v7wHj0c_IT_0nSJfy4Fxm09DV_ByGmjm9MTxoYmo9COtBgNHR1ybS13JthdBnf1qzPOZhqC"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Checklist -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-4">Event Prep</h4>
+<ul class="space-y-3">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-green-600">check_circle</span>
+<span class="text-on-surface font-body-md line-through opacity-50">Upload Guest List</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-green-600">check_circle</span>
+<span class="text-on-surface font-body-md line-through opacity-50">Configure Wi-Fi signage</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">radio_button_unchecked</span>
+<span class="text-on-surface font-body-md">Print Table QR Codes</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">radio_button_unchecked</span>
+<span class="text-on-surface font-body-md">Assign Staff Access</span>
+</li>
+</ul>
+</div>
+<!-- Ad/Promotion Card -->
+<div class="bg-secondary-container text-on-secondary-container p-6 rounded-xl border border-outline-variant">
+<p class="font-label-sm text-label-sm font-bold uppercase tracking-widest mb-1">Premium Feature</p>
+<h4 class="text-xl font-bold mb-2">Live Slideshow</h4>
+<p class="font-body-md mb-4">Display a real-time photo wall on big screens during the event.</p>
+<button class="w-full h-12 rounded-lg bg-on-secondary-container text-white font-bold hover:bg-black transition-colors active:scale-95 duration-150">Activate Live Feed</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile Viewport Only - Shared Component) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-2 py-2 bg-surface dark:bg-surface-container-low border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-label-sm">Gallery</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-sm text-label-sm">Guests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple dashboard notification animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.group');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease-out';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body></html>

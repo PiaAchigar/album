@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wizard Step 2: Cover Photo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#0b1c30",
+                      "outline": "#75777d",
+                      "on-tertiary-fixed-variant": "#5c3d51",
+                      "on-surface-variant": "#45474c",
+                      "surface-container-low": "#eff4ff",
+                      "primary-fixed": "#d8e3fb",
+                      "on-secondary-fixed": "#241a00",
+                      "background": "#f8f9ff",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "outline-variant": "#c5c6cd",
+                      "secondary": "#735c00",
+                      "on-secondary-container": "#745c00",
+                      "tertiary-fixed-dim": "#e5bad3",
+                      "on-tertiary-container": "#ab859c",
+                      "secondary-container": "#fed65b",
+                      "primary-fixed-dim": "#bcc7de",
+                      "surface-dim": "#cbdbf5",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "inverse-primary": "#bcc7de",
+                      "surface-variant": "#d3e4fe",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#545f73",
+                      "inverse-surface": "#213145",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary-fixed": "#ffe088",
+                      "surface-container-high": "#dce9ff",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#1e293b",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#2c1325",
+                      "on-secondary-fixed-variant": "#574500",
+                      "on-surface": "#0b1c30",
+                      "surface-bright": "#f8f9ff",
+                      "tertiary-container": "#3b2032",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#e5eeff",
+                      "surface": "#f8f9ff",
+                      "secondary-fixed-dim": "#e9c349",
+                      "on-primary-container": "#8590a6",
+                      "tertiary": "#240b1d",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed": "#111c2d",
+                      "tertiary-fixed": "#ffd8ed",
+                      "primary": "#091426"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "stack-sm": "12px",
+                      "gutter-grid": "8px",
+                      "stack-md": "24px",
+                      "touch-target-min": "48px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "display-festive": ["Playfair Display"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- Top Navigation Bar - Organizer Style (Transactional/Wizard context) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target-min bg-surface/80 glass-effect">
+<button class="flex items-center justify-center w-touch-target-min h-touch-target-min active:scale-95 transition-transform text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Album</h1>
+<div class="w-touch-target-min h-touch-target-min flex items-center justify-center">
+<!-- Space for balance or trailing element if needed -->
+</div>
+</header>
+<main class="flex-grow pt-[64px] pb-[100px] px-margin-mobile flex flex-col max-w-md mx-auto w-full">
+<!-- Wizard Progress Section -->
+<div class="mt-stack-md mb-stack-md">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Paso 2 de 4</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Foto de Portada</span>
+</div>
+<!-- Organizer Style Progress Bar -->
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/2 transition-all duration-500 ease-out"></div>
+</div>
+</div>
+<!-- Headline & Instructions -->
+<section class="mb-stack-md">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Selecciona la portada</h2>
+<p class="text-on-surface-variant font-body-md">Esta será la primera imagen que vean tus invitados al entrar al álbum.</p>
+</section>
+<!-- Upload Area (Main Interaction) -->
+<div class="relative group cursor-pointer" id="upload-container">
+<!-- Empty State / Placeholder -->
+<div class="aspect-[4/5] w-full rounded-xl border-2 border-dashed border-outline-variant bg-surface-container-low flex flex-col items-center justify-center p-stack-md text-center transition-colors hover:bg-surface-container-high active:scale-[0.98] duration-150" id="upload-placeholder">
+<div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-4xl" data-icon="add_a_photo" style="font-variation-settings: 'FILL' 1;">add_a_photo</span>
+</div>
+<h3 class="text-primary font-bold mb-2">Subir foto</h3>
+<p class="text-on-surface-variant text-sm px-4">Recomendamos una foto vertical de alta calidad para mejores resultados.</p>
+</div>
+<!-- Preview State (Hidden by default, triggered by JS simulation) -->
+<div class="hidden aspect-[4/5] w-full rounded-xl overflow-hidden shadow-sm relative group" id="image-preview">
+<img class="w-full h-full object-cover" data-alt="A professional and artistic portrait of a happy wedding couple in a soft, sun-drenched outdoor setting. The image uses a high-key light-mode aesthetic with creamy whites and soft gold highlights. The background is a gently blurred garden, emphasizing the elegance and joy of the event. The visual style is premium and editorial, fitting for a luxury digital wedding album cover." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIzQNRMA0MZ2JuzCFt4DkiX-yaZFqq85NwJQGoTzjJ8cwx0yIvR65ZMxfINLXXc7eJU8Ale452HAx_x-vOa7A0pxcVSLkEGN6rqnyeZYPCp3PPXHpJE2UG2eHiRzp3kTotv-V3v6UpiyL2AKq-ReswsZwPcccaMsBuW39-jiTIYdhPeVNahdO3E52e7pbL3s7yUZs3Fvhs_wHG_t2VD-jtaMzGFlvbAxN6X6aKWBpf3R44Zk9GRa8O"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface rounded-full px-4 py-2 flex items-center gap-2 text-primary font-bold shadow-md hover:bg-surface-bright active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+                        Cambiar foto
+                    </button>
+</div>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="info">info</span>
+<p class="text-xs">Máximo 10MB. Formatos JPG, PNG.</p>
+</div>
+</main>
+<!-- Bottom Action Bar (Wizard Navigation) -->
+<footer class="fixed bottom-0 w-full z-50 bg-surface/90 glass-effect px-4 py-4 flex items-center gap-4 border-t border-outline-variant max-w-md mx-auto left-0 right-0">
+<button class="flex-1 h-touch-target-min rounded-xl border border-outline text-primary font-bold flex items-center justify-center gap-2 hover:bg-surface-container-high active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+            Anterior
+        </button>
+<button class="flex-[2] h-touch-target-min rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center gap-2 hover:bg-primary-container active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:active:scale-100" disabled="" id="next-button">
+            Siguiente
+            <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</footer>
+<script>
+        // Micro-interaction: Simulate Image Upload
+        const uploadContainer = document.getElementById('upload-container');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const imagePreview = document.getElementById('image-preview');
+        const nextButton = document.getElementById('next-button');
+
+        uploadContainer.addEventListener('click', () => {
+            // Check if we are currently in placeholder mode
+            if (imagePreview.classList.contains('hidden')) {
+                // Simulate a loading state
+                uploadPlaceholder.innerHTML = `
+                    <div class="animate-spin text-primary">
+                        <span class="material-symbols-outlined text-4xl" data-icon="sync">sync</span>
+                    </div>
+                    <p class="mt-4 font-bold text-primary">Procesando imagen...</p>
+                `;
+                
+                setTimeout(() => {
+                    uploadPlaceholder.classList.add('hidden');
+                    imagePreview.classList.remove('hidden');
+                    nextButton.disabled = false;
+                }, 1200);
+            }
+        });
+
+        // Prevention of accidental navigation on "Edit" button inside preview
+        imagePreview.querySelector('button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            imagePreview.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+            // Reset placeholder content
+            uploadPlaceholder.innerHTML = `
+                <div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center mb-4 text-primary">
+                    <span class="material-symbols-outlined text-4xl" data-icon="add_a_photo" style="font-variation-settings: 'FILL' 1;">add_a_photo</span>
+                </div>
+                <h3 class="text-primary font-bold mb-2">Subir foto</h3>
+                <p class="text-on-surface-variant text-sm px-4">Recomendamos una foto vertical de alta calidad para mejores resultados.</p>
+            `;
+            nextButton.disabled = true;
+        });
+    </script>
+</body></html>

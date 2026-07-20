@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registro de Organizador - Album</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "outline": "#75777d",
+                        "on-tertiary-fixed-variant": "#5c3d51",
+                        "on-surface-variant": "#45474c",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed": "#d8e3fb",
+                        "on-secondary-fixed": "#241a00",
+                        "background": "#f8f9ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "outline-variant": "#c5c6cd",
+                        "secondary": "#735c00",
+                        "on-secondary-container": "#745c00",
+                        "tertiary-fixed-dim": "#e5bad3",
+                        "on-tertiary-container": "#ab859c",
+                        "secondary-container": "#fed65b",
+                        "primary-fixed-dim": "#bcc7de",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "inverse-primary": "#bcc7de",
+                        "surface-variant": "#d3e4fe",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#545f73",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary-fixed": "#ffe088",
+                        "surface-container-high": "#dce9ff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1e293b",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#2c1325",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-surface": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-container": "#3b2032",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#e5eeff",
+                        "surface": "#f8f9ff",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-primary-container": "#8590a6",
+                        "tertiary": "#240b1d",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#111c2d",
+                        "tertiary-fixed": "#ffd8ed",
+                        "primary": "#091426"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-sm": "12px",
+                        "gutter-grid": "8px",
+                        "stack-md": "24px",
+                        "touch-target-min": "48px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "display-festive": ["Playfair Display"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center justify-center">
+<!-- Top AppBar (Organizer Context Style) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-touch-target-min bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">menu</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Album</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A clean and professional minimalist avatar icon representing an event organizer. The image is set against a soft, light blue background with a sharp, high-contrast silhouette of a person wearing a formal blazer. The lighting is even and modern, conveying a sense of reliability and expert coordination in a high-stakes professional environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnKgP329wUEuzStiVYGTR7JffxnWF6mU9Up9rRsDmbUvkVVTOaTEg7Ki3u-upNtNnSGwEn0honK96NMGpHf8xSBHTQUOYxUTxBn8nkVd4gtPJ8i_3uXD_Jqfd5fw5OguzUS28l-SeaVAbYSPR6shaRdKVTS8aHnyIirToHSidGy07wANBaGIxxQ8H184_lu9On9ZcyPGYNfEJnR9G7H7C9O9b-7PFG-dhFbPi1WtJbfZthdjYSEA6u"/>
+</div>
+</header>
+<!-- Main Registration Canvas -->
+<main class="w-full max-w-md px-margin-mobile pt-24 pb-12 flex flex-col gap-stack-md">
+<!-- Welcome Header -->
+<div class="flex flex-col gap-2">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">Empieza a organizar</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Crea tu cuenta de organizador para gestionar tus eventos y galerías.</p>
+</div>
+<!-- Registration Form -->
+<form class="flex flex-col gap-stack-md" onsubmit="event.preventDefault();">
+<!-- Full Name Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant px-1" for="name">NOMBRE COMPLETO</label>
+<div class="relative">
+<input class="w-full h-touch-target-min px-4 bg-surface-container-low border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md outline-none" id="name" placeholder="Ej. Juan Pérez" type="text"/>
+</div>
+</div>
+<!-- Email Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant px-1" for="email">CORREO ELECTRÓNICO</label>
+<div class="relative">
+<input class="w-full h-touch-target-min px-4 bg-surface-container-low border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md outline-none" id="email" placeholder="nombre@ejemplo.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant px-1" for="password">CONTRASEÑA</label>
+<div class="relative">
+<input class="w-full h-touch-target-min px-4 bg-surface-container-low border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md outline-none" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+<p class="text-[11px] text-on-surface-variant px-1">Mínimo 8 caracteres, incluyendo un número.</p>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full h-touch-target-min bg-primary text-on-primary font-bold rounded-xl shadow-md active:scale-[0.98] transition-transform flex items-center justify-center gap-2 mt-4" type="submit">
+                Crear cuenta
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</form>
+<!-- Divider with Text -->
+<div class="flex items-center gap-4 py-4">
+<div class="flex-1 h-[1px] bg-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-outline">O REGÍSTRATE CON</span>
+<div class="flex-1 h-[1px] bg-outline-variant"></div>
+</div>
+<!-- Social Auth Grid -->
+<div class="grid grid-cols-2 gap-4">
+<button class="h-touch-target-min border border-outline-variant rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors">
+<div class="w-5 h-5 bg-contain bg-no-repeat" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCBQevbxSydwtGReYKRctGwNClbx9J7Ur2TudnomREsSf0nmfdPKfboDuYpJvAWT9UMy14adboBXuyh3DV6W31fNNS4wXMEsYMtI9-9Bnbh2XEUjxkI0Mp6DIz50vuDW4tj4cr2KYWkhaAcOcOrBHJVbzRmAwVfd1HjlCSagvd3Xy-ZG4uiG7CTR-0NyqVejR-X1SeuCkJ6yXU-hLuy99CBiech5xzKeWyoKmO927f2KhJVyfG6k05Q')"></div>
+<span class="font-label-sm text-label-sm">Google</span>
+</button>
+<button class="h-touch-target-min border border-outline-variant rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[#1877F2]">face_nod</span>
+<span class="font-label-sm text-label-sm">Facebook</span>
+</button>
+</div>
+<!-- Secondary Link -->
+<div class="flex flex-col items-center gap-4 mt-8">
+<a class="font-body-md text-body-md text-primary font-bold hover:underline" href="#">
+                ¿Ya tenés cuenta? Iniciá sesión
+            </a>
+<p class="font-label-sm text-label-sm text-center text-on-surface-variant px-8">
+                Al registrarte, aceptás nuestros <a class="underline" href="#">Términos de Servicio</a> y <a class="underline" href="#">Privacidad</a>.
+            </p>
+</div>
+</main>
+<!-- Visual Anchor / Background Decoration (Organizer Minimalist Style) -->
+<div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-surface-container-highest/30 blur-3xl"></div>
+<div class="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] rounded-full bg-primary/5 blur-3xl"></div>
+</div>
+<!-- Navigation Shell Suppressed as per Task Logic (Transactional/Onboarding Flow) -->
+<script>
+        // Micro-interaction for input focus effects
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.parentElement.querySelector('label').classList.add('text-primary');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.parentElement.querySelector('label').classList.remove('text-primary');
+            });
+        });
+
+        // Toggle Password Visibility
+        const passBtn = document.querySelector('button .material-symbols-outlined[content="visibility"]')?.parentElement || document.querySelector('button .material-symbols-outlined')?.parentElement;
+        if(passBtn) {
+            passBtn.addEventListener('click', () => {
+                const input = passBtn.previousElementSibling;
+                const icon = passBtn.querySelector('.material-symbols-outlined');
+                if(input.type === 'password') {
+                    input.type = 'text';
+                    icon.textContent = 'visibility_off';
+                } else {
+                    input.type = 'password';
+                    icon.textContent = 'visibility';
+                }
+            });
+        }
+    </script>
+</body></html>

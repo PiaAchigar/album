@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Slideshow - Organizer View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Playfair+Display:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Load Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#5c3d51",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-secondary-fixed": "#241a00",
+                    "tertiary-fixed": "#ffd8ed",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#8590a6",
+                    "tertiary-container": "#3b2032",
+                    "inverse-primary": "#bcc7de",
+                    "outline-variant": "#c5c6cd",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "surface-container-high": "#dce9ff",
+                    "on-surface": "#0b1c30",
+                    "primary-container": "#1e293b",
+                    "secondary": "#735c00",
+                    "on-primary-fixed": "#111c2d",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#545f73",
+                    "on-secondary-container": "#745c00",
+                    "surface-container": "#e5eeff",
+                    "surface-container-low": "#eff4ff",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "background": "#f8f9ff",
+                    "outline": "#75777d",
+                    "secondary-fixed-dim": "#e9c349",
+                    "on-tertiary-fixed": "#2c1325",
+                    "surface-container-highest": "#d3e4fe",
+                    "primary-fixed-dim": "#bcc7de",
+                    "secondary-container": "#fed65b",
+                    "primary": "#091426",
+                    "on-tertiary-container": "#ab859c",
+                    "on-surface-variant": "#45474c",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-dim": "#cbdbf5",
+                    "secondary-fixed": "#ffe088",
+                    "primary-fixed": "#d8e3fb",
+                    "surface": "#f8f9ff",
+                    "inverse-surface": "#213145",
+                    "on-background": "#0b1c30",
+                    "surface-variant": "#d3e4fe",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#e5bad3",
+                    "surface-bright": "#f8f9ff",
+                    "tertiary": "#240b1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "12px",
+                    "touch-target-min": "48px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "stack-md": "24px",
+                    "gutter-grid": "8px"
+            },
+            "fontFamily": {
+                    "display-festive": ["Playfair Display"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "display-festive": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .progress-fill {
+            transition: width 0.1s linear;
+        }
+
+        .fade-slide-enter {
+            opacity: 0;
+            transform: scale(1.05);
+        }
+        .fade-slide-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.8s ease, transform 10s ease-out;
+        }
+
+        .hide-ui {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .show-ui {
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-primary overflow-hidden h-full selection:bg-primary-container">
+<!-- Background Layer: Subtle Shader Atmosphere -->
+<div class="fixed inset-0 z-0 opacity-40">
+
+</div>
+<!-- Main Slideshow Canvas -->
+<main class="relative z-10 h-full w-full flex flex-col items-center justify-center overflow-hidden">
+<!-- Progress Bar (Top Anchor) -->
+<div class="fixed top-0 left-0 w-full h-1 bg-white/10 z-50">
+<div class="h-full bg-on-primary progress-fill" id="progress-bar" style="width: 0%;"></div>
+</div>
+<!-- Image Container -->
+<div class="relative w-full h-full flex items-center justify-center p-4" id="slideshow-container">
+<img class="max-h-[85vh] max-w-full object-contain shadow-2xl rounded-lg fade-slide-active" data-alt="A high-resolution, candid portrait of wedding guests laughing at a reception, captured with professional bokeh and warm ambient indoor lighting. The style is elegant and cinematic, featuring rich shadows and sharp focus on the subjects, fitting for a premium event photography album. Deep navy and muted gold tones dominate the background environment." id="current-slide" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALyWdrgBiIZVy0zWwvZgRiT94Cq0rUimA77ciGKfVpxYpchQ7V423ZWRwl-SyOhqT97ojTR3-Wk1Uy_c2NHVQ33hArhmrZg2hSOYpe7NclLTtZl7CAuNtU4zSqtGxfo4q5pLUJxf2u7lmtWe5F39Fu7mXHs5XZ4yetFdb0mKfjOm5nfEVp9hEP1LfBc7111k5vRqpAWhx2D8466GppXY0iHl0jyWOYh9aUgXJbRJVgZuEBVoWpxaVb"/>
+</div>
+<!-- UI Shell Overlay (Fades out on inactivity) -->
+<div class="fixed inset-0 flex flex-col pointer-events-none show-ui" id="ui-shell">
+<!-- Top Controls (Close) -->
+<header class="w-full flex justify-end p-margin-mobile pointer-events-auto">
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white active:scale-90 transition-transform" onclick="window.history.back()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<!-- Spacer -->
+<div class="flex-grow"></div>
+<!-- Bottom Content & Playback -->
+<footer class="w-full bg-gradient-to-t from-black/80 to-transparent pt-20 pb-10 px-margin-mobile pointer-events-auto">
+<div class="flex flex-col items-center gap-stack-md">
+<!-- Uploader Metadata -->
+<div class="text-center">
+<p class="font-label-sm text-label-sm text-white/60 tracking-widest uppercase mb-unit">Shared by</p>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-white" id="uploader-name">Sarah Jenkins</h2>
+</div>
+<!-- Playback Controls -->
+<div class="flex items-center gap-8">
+<button class="text-white/80 hover:text-white active:scale-95 transition-all" onclick="prevSlide()">
+<span class="material-symbols-outlined !text-[32px]">skip_previous</span>
+</button>
+<button class="w-16 h-16 flex items-center justify-center rounded-full bg-white text-primary shadow-xl active:scale-90 transition-all" id="play-pause-btn" onclick="togglePlay()">
+<span class="material-symbols-outlined !text-[40px]" id="play-pause-icon" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<button class="text-white/80 hover:text-white active:scale-95 transition-all" onclick="nextSlide()">
+<span class="material-symbols-outlined !text-[32px]">skip_next</span>
+</button>
+</div>
+<!-- Photo Index / Counter -->
+<div class="bg-white/10 px-4 py-1 rounded-full border border-white/5">
+<span class="font-label-sm text-label-sm text-white/90" id="slide-counter">1 / 12</span>
+</div>
+</div>
+</footer>
+</div>
+<!-- Side Touch Areas for navigation -->
+<div class="fixed inset-y-0 left-0 w-20 z-20 cursor-pointer" onclick="prevSlide()"></div>
+<div class="fixed inset-y-0 right-0 w-20 z-20 cursor-pointer" onclick="nextSlide()"></div>
+</main>
+<script>
+        const slides = [
+            {
+                url: "placeholder",
+                uploader: "Sarah Jenkins",
+                prompt: "A stunning cinematic shot of a multi-tiered wedding cake decorated with fresh white roses, set against a background of twinkling fairy lights in a dark navy reception hall. Professional photography style with shallow depth of field and soft warm highlights."
+            },
+            {
+                url: "placeholder",
+                uploader: "Mark Thompson",
+                prompt: "An atmospheric photo of the bride and groom's first dance, silhouetted against a spotlight with theatrical haze in the air. The mood is intimate and romantic, with a focus on movement and light contrast. Deep shadows and professional event lighting."
+            },
+            {
+                url: "placeholder",
+                uploader: "Elena Rodriguez",
+                prompt: "A high-angle photo of a long dining table at a luxury wedding, covered in gold cutlery, crystal glasses, and lush greenery centerpieces. The lighting is moody and sophisticated, highlighting the tactile textures of linen and glass."
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = true;
+        let progress = 0;
+        const SLIDE_DURATION = 5000; // 5 seconds per slide
+        const TICK_RATE = 100; // Update progress every 100ms
+        let interval;
+
+        const imgElement = document.getElementById('current-slide');
+        const uploaderElement = document.getElementById('uploader-name');
+        const counterElement = document.getElementById('slide-counter');
+        const progressBar = document.getElementById('progress-bar');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        const uiShell = document.getElementById('ui-shell');
+
+        function updateSlide() {
+            const slide = slides[currentIndex];
+            
+            // Trigger animation
+            imgElement.style.opacity = '0';
+            imgElement.style.transform = 'scale(1.05)';
+            
+            setTimeout(() => {
+                imgElement.src = slide.url;
+                // Since we can't update data-alt dynamically in a way that triggers re-generation, 
+                // we treat these as placeholder indices in a real app.
+                uploaderElement.textContent = slide.uploader;
+                counterElement.textContent = `${currentIndex + 1} / ${slides.length}`;
+                
+                imgElement.style.opacity = '1';
+                imgElement.style.transform = 'scale(1)';
+                progress = 0;
+            }, 300);
+        }
+
+        function startSlideshow() {
+            clearInterval(interval);
+            interval = setInterval(() => {
+                if (isPlaying) {
+                    progress += (TICK_RATE / SLIDE_DURATION) * 100;
+                    progressBar.style.width = `${progress}%`;
+
+                    if (progress >= 100) {
+                        nextSlide();
+                    }
+                }
+            }, TICK_RATE);
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            playPauseIcon.textContent = isPlaying ? 'pause' : 'play_arrow';
+            if (isPlaying) {
+                playPauseIcon.style.fontVariationSettings = "'FILL' 1";
+            } else {
+                playPauseIcon.style.fontVariationSettings = "'FILL' 0";
+            }
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % slides.length;
+            progress = 0;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+            progress = 0;
+            updateSlide();
+        }
+
+        // Inactivity UI Hiding
+        let uiTimeout;
+        function resetUiTimer() {
+            uiShell.classList.remove('hide-ui');
+            uiShell.classList.add('show-ui');
+            clearTimeout(uiTimeout);
+            uiTimeout = setTimeout(() => {
+                if (isPlaying) {
+                    uiShell.classList.remove('show-ui');
+                    uiShell.classList.add('hide-ui');
+                }
+            }, 3000);
+        }
+
+        document.addEventListener('mousemove', resetUiTimer);
+        document.addEventListener('touchstart', resetUiTimer);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') togglePlay();
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            resetUiTimer();
+        });
+
+        // Initialize
+        updateSlide();
+        startSlideshow();
+        resetUiTimer();
+    </script>
+</body></html>
