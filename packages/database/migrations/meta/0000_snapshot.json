@@ -1,0 +1,311 @@
+{
+  "id": "d1dfbdb8-e464-42ba-b978-0ab163b1c4dd",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.archivos": {
+      "name": "archivos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "evento_id": {
+          "name": "evento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invitado_id": {
+          "name": "invitado_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "r2_key": {
+          "name": "r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "thumbnail_key": {
+          "name": "thumbnail_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendiente'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "archivos_evento_id_eventos_id_fk": {
+          "name": "archivos_evento_id_eventos_id_fk",
+          "tableFrom": "archivos",
+          "tableTo": "eventos",
+          "columnsFrom": [
+            "evento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "archivos_invitado_id_invitados_id_fk": {
+          "name": "archivos_invitado_id_invitados_id_fk",
+          "tableFrom": "archivos",
+          "tableTo": "invitados",
+          "columnsFrom": [
+            "invitado_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.eventos": {
+      "name": "eventos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "organizador_id": {
+          "name": "organizador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre_evento": {
+          "name": "nombre_evento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "horario": {
+          "name": "horario",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "foto_portada_url": {
+          "name": "foto_portada_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cantidad_invitados_totales": {
+          "name": "cantidad_invitados_totales",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "limite_invitados_login": {
+          "name": "limite_invitados_login",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "limite_fotos_por_invitado": {
+          "name": "limite_fotos_por_invitado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "limite_videos_por_invitado": {
+          "name": "limite_videos_por_invitado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'borrador'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "eventos_slug_unique": {
+          "name": "eventos_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.invitados": {
+      "name": "invitados",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "evento_id": {
+          "name": "evento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "apellido": {
+          "name": "apellido",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acepto_terminos": {
+          "name": "acepto_terminos",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_sesion": {
+          "name": "token_sesion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fotos_subidas": {
+          "name": "fotos_subidas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "videos_subidos": {
+          "name": "videos_subidos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "invitados_evento_id_eventos_id_fk": {
+          "name": "invitados_evento_id_eventos_id_fk",
+          "tableFrom": "invitados",
+          "tableTo": "eventos",
+          "columnsFrom": [
+            "evento_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "invitados_token_sesion_unique": {
+          "name": "invitados_token_sesion_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_sesion"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
