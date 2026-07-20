@@ -221,3 +221,24 @@ PUBLIC_APP_URL=
 - Cobro por evento (Mercado Pago) — se agrega cuando el flujo completo funcione gratis.
 - Moderación automática de contenido (NSFW detection) — nice-to-have, no bloqueante para el MVP.
 - Notificaciones push/email al organizador cuando se acerca al límite de invitados o storage.
+
+
+## Mañana seguimos acá:
+Anotá este mensaje para mañana:
+
+      ---
+      Para retomar mañana — Album SaaS, branch implementacion
+
+      Dónde estamos: Ejecutando Task 0.5 (pnpm install + verify + codegraph) en background. Es la última tarea de la Fase 0. Las Fases 0.1–0.4 están todas completas y aprobadas.
+
+    Cómo retomar:
+      1. Abrí Claude Code en /home/pia/Escritorio/album
+      2. Decile: "Retomá el plan de implementación de Album desde donde quedamos. Revisá el ledger en .superpowers/sdd/progress.md y el git log para saber el estado exacto."
+
+      Lo que Claude va a encontrar:
+      - Ledger en .superpowers/sdd/progress.md con todas las tareas completadas marcadas
+      - Branch implementacion con commits desde 1ef6aa2 hasta donde haya llegado
+      - Plan completo en docs/superpowers/plans/2026-07-19-album-implementation.md
+      - Skill activo: superpowers:subagent-driven-development
+
+      Siguiente tarea después de 0.5: Task 1.1 — Drizzle migration + Supabase RLS (vas a necesitar las credenciales de Supabase en .env.local)
