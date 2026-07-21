@@ -5,6 +5,7 @@ import { db } from './db/index.js'
 import { sql } from 'drizzle-orm'
 import { corsMiddleware } from './middleware/cors.js'
 import { createEventosRoutes } from './routes/eventos.routes.js'
+import { createArchivosRoutes } from './routes/archivos.routes.js'
 
 const app = new Hono()
 
@@ -28,6 +29,7 @@ app.get('/health', async (c) => {
 })
 
 app.route('/', createEventosRoutes())
+app.route('/', createArchivosRoutes())
 
 const port = Number(process.env.PORT ?? 3001)
 console.log(`API running on http://localhost:${port}`)
