@@ -1,22 +1,14 @@
 import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
 import { db } from './db/index.js'
 import { sql } from 'drizzle-orm'
+import { corsMiddleware } from './middleware/cors.js'
 
 const app = new Hono()
 
 // CORS — allow requests from Next.js frontend
-app.use(
-  '*',
-  cors({
-    origin: process.env.API_CORS_ORIGIN ?? 'http://localhost:3000',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  }),
-)
+app.use('*', corsMiddleware)
 
 // Health check — verifies DB connectivity with a 3-second timeout
 app.get('/health', async (c) => {
