@@ -74,11 +74,22 @@ function validBody(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function postInvitado(slug: string, body: unknown) {
+// registroRateLimitMiddleware is a real, unmocked module-level singleton
+// with its own internal Map keyed by IP — it is never reset between tests.
+// Each test below is given a distinct x-forwarded-for IP so its requests
+// land in their own bucket and can never collide with another test's count,
+// regardless of test order, additions, removals, or concurrent execution.
+let ipCounter = 0
+function nextTestIp() {
+  ipCounter += 1
+  return `10.0.0.${ipCounter}`
+}
+
+function postInvitado(slug: string, body: unknown, ip = nextTestIp()) {
   const router = createEventosRoutes()
   return router.request(`/eventos/${slug}/invitados`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
     body: JSON.stringify(body),
   })
 }
