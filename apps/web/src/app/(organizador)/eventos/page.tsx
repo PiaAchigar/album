@@ -15,12 +15,13 @@ function estadoInfo(estado: string) {
 
 function formatearFecha(fecha: string) {
   const fechaLocal = new Date(`${fecha}T00:00:00`)
-  return fechaLocal.toLocaleDateString('es-AR', {
+  const texto = fechaLocal.toLocaleDateString('es-AR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
 }
 
 export default async function EventosPage() {
@@ -84,7 +85,7 @@ export default async function EventosPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="text-sm text-muted-foreground">
-                      <p className="capitalize">
+                      <p>
                         {formatearFecha(evento.fecha)}
                         {evento.horario ? ` — ${evento.horario}` : ''}
                       </p>
