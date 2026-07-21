@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -16,7 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} font-sans`}>{children}</body>
+      <body className={`${inter.className} font-sans`}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   )
 }

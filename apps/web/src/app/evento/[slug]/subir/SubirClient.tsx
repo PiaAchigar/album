@@ -1,0 +1,407 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { Camera, Check, Images, X } from 'lucide-react'
+import { useInvitado } from '@/hooks/useInvitado'
+import { apiClient, ApiError } from '@/lib/api-client'
+import { obtenerContadoresInvitado } from '@/app/(organizador)/actions/invitados.actions'
+import { Progress } from '@/components/ui/progress'
+
+interface Props {
+  slug: string
+  eventoId: string
+  nombreEvento: string
+  limiteFotos: number
+  limiteVideos: number
+}
+
+type Tipo = 'foto' | 'video'
+type ItemStatus = 'uploading' | 'done' | 'error'
+
+interface UploadItem {
+  id: string
+  tipo: Tipo
+  previewUrl: string | null
+  progress: number
+  status: ItemStatus
+}
+
+interface Counters {
+  fotos: number
+  videos: number
+}
+
+const ALLOWED_MIME: Record<Tipo, string[]> = {
+  foto: ['image/jpeg', 'image/png', 'image/heic', 'image/webp'],
+  video: ['video/mp4', 'video/quicktime', 'video/avi', 'video/webm'],
+}
+
+// The API only accepts extensions from this exact set (see
+// apps/api/src/routes/archivos.routes.ts ALLOWED_EXTENSIONS). Deriving the
+// extension from the MIME type — rather than trusting the filename — keeps
+// us aligned with that allowlist regardless of what the OS/browser named
+// the file (camera captures in particular are inconsistent about this).
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/heic': 'heic',
+  'image/webp': 'webp',
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+  'video/avi': 'avi',
+  'video/webm': 'webm',
+}
+
+const MAX_BYTES: Record<Tipo, number> = {
+  foto: 20 * 1024 * 1024,
+  video: 200 * 1024 * 1024,
+}
+
+const MAX_LABEL: Record<Tipo, string> = {
+  foto: '20 MB',
+  video: '200 MB',
+}
+
+function tipoFromMime(mime: string): Tipo | null {
+  if (mime.startsWith('image/')) return 'foto'
+  if (mime.startsWith('video/')) return 'video'
+  return null
+}
+
+/** PUTs `file` to a presigned R2 URL, reporting upload progress via XHR. */
+function putWithProgress(
+  url: string,
+  file: File,
+  onProgress: (pct: number) => void
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', url)
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100))
+      }
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve()
+      } else {
+        reject(new Error(`No se pudo subir el archivo (HTTP ${xhr.status})`))
+      }
+    }
+    xhr.onerror = () => reject(new Error('No se pudo conectar para subir el archivo'))
+    xhr.send(file)
+  })
+}
+
+export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: Props) {
+  const router = useRouter()
+  const { token, invitadoId, isLoaded } = useInvitado(slug)
+
+  const [counters, setCountersState] = useState<Counters | null>(null)
+  const countersRef = useRef<Counters>({ fotos: 0, videos: 0 })
+
+  const [items, setItems] = useState<UploadItem[]>([])
+  const itemsRef = useRef<UploadItem[]>([])
+
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  // Guests without a session token never reach this screen directly — send
+  // them back to registro. Wait for isLoaded so we don't redirect before
+  // localStorage has actually been read.
+  useEffect(() => {
+    if (isLoaded && !token) {
+      router.replace(`/evento/${slug}/registro`)
+    }
+  }, [isLoaded, token, router, slug])
+
+  useEffect(() => {
+    if (!invitadoId) return
+    let cancelled = false
+
+    obtenerContadoresInvitado(invitadoId)
+      .then((row) => {
+        if (cancelled) return
+        const next: Counters = row
+          ? { fotos: row.fotos_subidas, videos: row.videos_subidos }
+          : { fotos: 0, videos: 0 }
+        countersRef.current = next
+        setCountersState(next)
+        if (!row) {
+          toast.error('No pudimos cargar tus contadores. Los límites podrían no reflejarse bien.')
+        }
+      })
+      .catch(() => {
+        if (cancelled) return
+        countersRef.current = { fotos: 0, videos: 0 }
+        setCountersState(countersRef.current)
+        toast.error('No pudimos cargar tus contadores. Los límites podrían no reflejarse bien.')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [invitadoId])
+
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  // Release object URLs on unmount only — reading previews from the ref
+  // avoids re-running this effect (and revoking live previews) every time
+  // `items` changes during an upload.
+  useEffect(() => {
+    return () => {
+      for (const item of itemsRef.current) {
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl)
+      }
+    }
+  }, [])
+
+  function setCounters(next: Counters) {
+    countersRef.current = next
+    setCountersState(next)
+  }
+
+  async function uploadFile(file: File, tipo: Tipo) {
+    const id =
+      typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
+    const previewUrl = tipo === 'foto' ? URL.createObjectURL(file) : null
+
+    setItems((prev) => [...prev, { id, tipo, previewUrl, progress: 0, status: 'uploading' }])
+
+    try {
+      const extension = MIME_TO_EXT[file.type]
+      const { upload_url, r2_key } = await apiClient(slug).solicitarSubida(tipo, extension)
+
+      await putWithProgress(upload_url, file, (pct) => {
+        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, progress: pct } : it)))
+      })
+
+      await apiClient(slug).confirmarSubida(r2_key, tipo, extension)
+
+      setItems((prev) =>
+        prev.map((it) => (it.id === id ? { ...it, status: 'done', progress: 100 } : it))
+      )
+      setCounters({
+        fotos: countersRef.current.fotos + (tipo === 'foto' ? 1 : 0),
+        videos: countersRef.current.videos + (tipo === 'video' ? 1 : 0),
+      })
+    } catch (err) {
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'error' } : it)))
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'No se pudo subir el archivo. Intentá de nuevo.'
+      toast.error(message)
+    }
+  }
+
+  async function processFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return
+    const warned = new Set<Tipo>()
+
+    for (const file of Array.from(fileList)) {
+      const tipo = tipoFromMime(file.type)
+
+      if (!tipo || !ALLOWED_MIME[tipo].includes(file.type)) {
+        toast.error(`Formato no soportado${file.type ? `: ${file.type}` : ''}.`)
+        continue
+      }
+
+      if (file.size > MAX_BYTES[tipo]) {
+        toast.error(
+          `${tipo === 'foto' ? 'La foto' : 'El video'} supera el tamaño máximo permitido (${MAX_LABEL[tipo]}).`
+        )
+        continue
+      }
+
+      const limite = tipo === 'foto' ? limiteFotos : limiteVideos
+      const usados = tipo === 'foto' ? countersRef.current.fotos : countersRef.current.videos
+
+      if (usados >= limite) {
+        if (!warned.has(tipo)) {
+          toast.error(`Ya usaste tus ${limite} ${tipo === 'foto' ? 'fotos' : 'videos'}.`)
+          warned.add(tipo)
+        }
+        continue
+      }
+
+      // Sequential on purpose: each upload's success updates countersRef
+      // before the next file in the batch is checked against the limit.
+      await uploadFile(file, tipo)
+    }
+  }
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    void processFiles(e.target.files)
+    e.target.value = ''
+  }
+
+  if (!isLoaded || !token) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-backdrop">
+        <p className="text-sm text-muted-foreground">Cargando…</p>
+      </div>
+    )
+  }
+
+  const countersLoaded = counters !== null
+  const fotosUsadas = counters?.fotos ?? 0
+  const videosUsadas = counters?.videos ?? 0
+  const fotoAtLimit = fotosUsadas >= limiteFotos
+  const videoAtLimit = videosUsadas >= limiteVideos
+
+  return (
+    <div className="flex min-h-screen flex-col bg-backdrop">
+      <header className="fixed top-0 z-30 flex h-12 w-full items-center justify-between bg-background/80 px-4 backdrop-blur-md">
+        <Link
+          href={`/evento/${slug}`}
+          aria-label="Volver al evento"
+          className="flex h-8 w-8 items-center justify-center text-primary transition-opacity active:opacity-70"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </Link>
+        <h2 className="truncate font-[family-name:var(--font-playfair)] text-lg font-bold text-primary">
+          {nombreEvento}
+        </h2>
+        <div className="w-8" aria-hidden="true" />
+      </header>
+
+      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-12 pt-16">
+        {/* Counters */}
+        <section className="mt-6 space-y-3">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Fotos
+              </span>
+              <span className="text-xs font-bold text-primary">
+                {countersLoaded ? `${fotosUsadas} de ${limiteFotos} fotos usadas` : 'Cargando…'}
+              </span>
+            </div>
+            <Progress
+              value={countersLoaded ? Math.min(100, (fotosUsadas / Math.max(limiteFotos, 1)) * 100) : 0}
+              className="h-1.5"
+            />
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Videos
+              </span>
+              <span className="text-xs font-bold text-primary">
+                {countersLoaded ? `${videosUsadas} de ${limiteVideos} videos usados` : 'Cargando…'}
+              </span>
+            </div>
+            <Progress
+              value={countersLoaded ? Math.min(100, (videosUsadas / Math.max(limiteVideos, 1)) * 100) : 0}
+              className="h-1.5"
+            />
+          </div>
+        </section>
+
+        {/* Action buttons */}
+        <section className="mt-6 grid grid-cols-2 gap-4">
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleInputChange}
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            onChange={handleInputChange}
+          />
+
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={!countersLoaded || fotoAtLimit}
+            className="flex h-32 flex-col items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground shadow-md transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+          >
+            <Camera className="h-7 w-7" aria-hidden="true" />
+            <span className="text-xs font-semibold uppercase tracking-widest">Sacar foto</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={!countersLoaded || (fotoAtLimit && videoAtLimit)}
+            className="flex h-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-primary bg-secondary text-primary shadow-sm transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+          >
+            <Images className="h-7 w-7" aria-hidden="true" />
+            <span className="text-xs font-semibold uppercase tracking-widest">Elegir de galería</span>
+          </button>
+        </section>
+
+        {/* Uploaded grid */}
+        <section className="mt-8">
+          <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-xl font-bold text-foreground">
+            Tus recuerdos
+          </h2>
+
+          {items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Todavía no subiste nada. Sacá una foto o elegí una de tu galería.
+            </p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="relative aspect-square overflow-hidden rounded-xl bg-muted shadow-sm"
+                >
+                  {item.tipo === 'foto' && item.previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.previewUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-3xl" aria-hidden="true">
+                      🎬
+                    </div>
+                  )}
+
+                  {item.status === 'uploading' && (
+                    <div className="absolute inset-x-0 bottom-0 bg-background/80 p-1.5">
+                      <Progress value={item.progress} className="h-1.5" />
+                    </div>
+                  )}
+
+                  {item.status === 'done' && (
+                    <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white">
+                      <Check className="h-3 w-3" aria-hidden="true" />
+                    </div>
+                  )}
+
+                  {item.status === 'error' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-destructive/70 text-center text-[11px] font-semibold text-white">
+                      Error al subir
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
+  )
+}
