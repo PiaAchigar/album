@@ -105,7 +105,7 @@ export async function activarEvento(
       .where(eq(eventos.id, eventoId))
 
     void organizadorId
-    revalidatePath('/(organizador)/eventos', 'page')
+    revalidatePath('/eventos', 'page')
     return { slug }
   } catch (err) {
     console.error('[activarEvento]', err)
