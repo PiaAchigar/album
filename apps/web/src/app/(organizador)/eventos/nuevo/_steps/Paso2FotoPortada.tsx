@@ -8,6 +8,7 @@ import { actualizarPortada } from '@/app/(organizador)/actions/eventos.actions'
 import { solicitarPresignedPortada } from '../actions'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic']
 const MAX_SIZE_MB = 10
 
 interface Props {
@@ -27,7 +28,11 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
   async function processFile(file: File) {
     setError(null)
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    const hasAllowedExtension = ALLOWED_EXTENSIONS.some((ext) =>
+      file.name.toLowerCase().endsWith(ext),
+    )
+
+    if (!ALLOWED_TYPES.includes(file.type) && !hasAllowedExtension) {
       setError('Solo se admiten imágenes JPG, PNG, WebP o HEIC.')
       return
     }
@@ -141,7 +146,7 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
         <input
           ref={inputRef}
           type="file"
-          accept={ALLOWED_TYPES.join(',')}
+          accept={[...ALLOWED_TYPES, ...ALLOWED_EXTENSIONS].join(',')}
           className="hidden"
           onChange={handleFileChange}
         />
