@@ -1,10 +1,27 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { listarEventos } from '@/app/(organizador)/actions/eventos.actions'
 import { logoutOrganizador } from '@/app/(organizador)/actions/auth.actions'
 import { OrganizadorTopbar } from '@/components/organizador-topbar'
 import { CalendarIcon, PlusIcon } from 'lucide-react'
+
+function estadoInfo(estado: string) {
+  if (estado === 'activo') return { label: 'Activo', variant: 'default' as const }
+  if (estado === 'cerrado') return { label: 'Cerrado', variant: 'outline' as const }
+  return { label: 'Borrador', variant: 'secondary' as const }
+}
+
+function formatearFecha(fecha: string) {
+  const fechaLocal = new Date(`${fecha}T00:00:00`)
+  return fechaLocal.toLocaleDateString('es-AR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 
 export default async function EventosPage() {
   const misEventos = await listarEventos()
@@ -55,29 +72,27 @@ export default async function EventosPage() {
                 </Link>
               </Button>
             </div>
-            {misEventos.map((evento) => (
-              <Card key={evento.id} className="border-border shadow-sm transition-shadow hover:shadow-md">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{evento.nombre_evento}</CardTitle>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        evento.estado === 'activo'
-                          ? 'bg-green-100 text-green-700'
-                          : evento.estado === 'cerrado'
-                            ? 'bg-gray-100 text-gray-600'
-                            : 'bg-yellow-100 text-yellow-700'
-                      }`}
-                    >
-                      {evento.estado}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  <p>{evento.fecha} — {evento.horario}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {misEventos.map((evento) => {
+              const { label, variant } = estadoInfo(evento.estado)
+              return (
+                <Link key={evento.id} href={`/eventos/${evento.id}`} className="block">
+                  <Card className="border-border shadow-sm transition-shadow hover:shadow-md">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-base">{evento.nombre_evento}</CardTitle>
+                        <Badge variant={variant}>{label}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground">
+                      <p className="capitalize">
+                        {formatearFecha(evento.fecha)}
+                        {evento.horario ? ` — ${evento.horario}` : ''}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
           </div>
         )}
       </main>
