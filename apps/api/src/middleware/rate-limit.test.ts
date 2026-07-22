@@ -113,3 +113,121 @@ describe('uploadRateLimitMiddleware (30 req/min per IP)', () => {
     expect(res.status).toBe(429)
   })
 })
+
+describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are set)', () => {
+  // NOTE: these tests mock '@upstash/ratelimit' and '@upstash/redis' — there
+  // is no real Upstash account/dashboard involved, and none is available in
+  // this environment. They verify the code *calls the SDK correctly*, not
+  // that a live Upstash deployment behaves as expected.
+  const ORIGINAL_URL = process.env.UPSTASH_REDIS_REST_URL
+  const ORIGINAL_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
+
+  beforeEach(() => {
+    // Real timers here: these tests reach for the network-shaped mocked SDK,
+    // not the in-memory setInterval-based path.
+    vi.useRealTimers()
+  })
+
+  afterEach(() => {
+    if (ORIGINAL_URL === undefined) delete process.env.UPSTASH_REDIS_REST_URL
+    else process.env.UPSTASH_REDIS_REST_URL = ORIGINAL_URL
+
+    if (ORIGINAL_TOKEN === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN
+    else process.env.UPSTASH_REDIS_REST_TOKEN = ORIGINAL_TOKEN
+
+    vi.doUnmock('@upstash/ratelimit')
+    vi.doUnmock('@upstash/redis')
+    vi.resetModules()
+  })
+
+  it('calls Ratelimit.limit() instead of the in-memory path when env vars are configured', async () => {
+    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
+
+    const limitMock = vi.fn().mockResolvedValue({ success: true })
+    const slidingWindowMock = vi.fn().mockReturnValue('sliding-window-config')
+    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
+    RatelimitMock.slidingWindow = slidingWindowMock
+    const RedisMock = vi.fn().mockImplementation((config: unknown) => ({ config }))
+
+    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
+    vi.resetModules()
+
+    const { registroRateLimitMiddleware } = await import('./rate-limit.js')
+    const app = new Hono()
+    app.post('/registro', registroRateLimitMiddleware, (c) => c.json({ ok: true }))
+
+    const res = await app.request('/registro', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '9.9.9.9' },
+    })
+
+    expect(res.status).toBe(200)
+    expect(RedisMock).toHaveBeenCalledWith({
+      url: 'https://fake-upstash.example.com',
+      token: 'fake-token',
+    })
+    expect(slidingWindowMock).toHaveBeenCalledWith(10, '60 s')
+    expect(limitMock).toHaveBeenCalledWith('9.9.9.9')
+  })
+
+  it('returns the same 429 response shape as the in-memory path when the Upstash limiter reports failure', async () => {
+    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
+
+    const limitMock = vi.fn().mockResolvedValue({ success: false })
+    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
+    RatelimitMock.slidingWindow = vi.fn().mockReturnValue('sliding-window-config')
+    const RedisMock = vi.fn().mockImplementation(() => ({}))
+
+    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
+    vi.resetModules()
+
+    const { uploadRateLimitMiddleware } = await import('./rate-limit.js')
+    const app = new Hono()
+    app.post('/upload', uploadRateLimitMiddleware, (c) => c.json({ ok: true }))
+
+    const res = await app.request('/upload', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.10.10.10' },
+    })
+    const body = await res.json()
+
+    expect(res.status).toBe(429)
+    expect(body).toEqual({
+      error: 'Demasiadas solicitudes. Esperá un momento e intentá de nuevo.',
+    })
+    expect(limitMock).toHaveBeenCalledWith('10.10.10.10')
+  })
+
+  it('respects the cf-connecting-ip > x-forwarded-for > x-real-ip precedence in the Upstash path too', async () => {
+    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
+
+    const limitMock = vi.fn().mockResolvedValue({ success: true })
+    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
+    RatelimitMock.slidingWindow = vi.fn().mockReturnValue('sliding-window-config')
+    const RedisMock = vi.fn().mockImplementation(() => ({}))
+
+    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
+    vi.resetModules()
+
+    const { registroRateLimitMiddleware } = await import('./rate-limit.js')
+    const app = new Hono()
+    app.post('/registro', registroRateLimitMiddleware, (c) => c.json({ ok: true }))
+
+    await app.request('/registro', {
+      method: 'POST',
+      headers: {
+        'cf-connecting-ip': '11.11.11.11',
+        'x-forwarded-for': '22.22.22.22',
+        'x-real-ip': '33.33.33.33',
+      },
+    })
+
+    expect(limitMock).toHaveBeenCalledWith('11.11.11.11')
+  })
+})
