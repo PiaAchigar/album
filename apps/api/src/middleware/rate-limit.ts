@@ -64,6 +64,7 @@ function createUpstashRateLimiter(
   windowMs: number,
   url: string,
   token: string,
+  label: string,
 ): MiddlewareHandler {
   const redis = new Redis({ url, token })
   const limiter = new Ratelimit({
@@ -73,10 +74,21 @@ function createUpstashRateLimiter(
 
   return async (c, next) => {
     const ip = extractIp(c)
-    const { success } = await limiter.limit(ip)
 
-    if (!success) {
-      return c.json({ error: RATE_LIMIT_MESSAGE }, 429)
+    try {
+      const { success } = await limiter.limit(ip)
+
+      if (!success) {
+        return c.json({ error: RATE_LIMIT_MESSAGE }, 429)
+      }
+    } catch (error) {
+      // Fail open: an Upstash outage/misconfiguration should not take down
+      // guest registration/upload during a live event. Log it so the
+      // failure is visible in server logs, then let the request through.
+      console.error(
+        `[rate-limit] Upstash limiter "${label}" failed, failing open`,
+        error,
+      )
     }
 
     return next()
@@ -87,19 +99,23 @@ function createUpstashRateLimiter(
 // UPSTASH_REDIS_REST_TOKEN are configured — survives restarts and is shared
 // across API instances. Falls back to the in-memory limiter (single
 // instance, resets on restart) otherwise, e.g. local dev.
-function createRateLimiter(maxRequests: number, windowMs: number): MiddlewareHandler {
+function createRateLimiter(
+  maxRequests: number,
+  windowMs: number,
+  label: string,
+): MiddlewareHandler {
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
   if (url && token) {
-    return createUpstashRateLimiter(maxRequests, windowMs, url, token)
+    return createUpstashRateLimiter(maxRequests, windowMs, url, token, label)
   }
 
   return createInMemoryRateLimiter(maxRequests, windowMs)
 }
 
 // 10 requests per minute for registration
-export const registroRateLimitMiddleware = createRateLimiter(10, 60_000)
+export const registroRateLimitMiddleware = createRateLimiter(10, 60_000, 'registro')
 
 // 30 requests per minute for upload endpoints
-export const uploadRateLimitMiddleware = createRateLimiter(30, 60_000)
+export const uploadRateLimitMiddleware = createRateLimiter(30, 60_000, 'upload')

@@ -230,4 +230,58 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
 
     expect(limitMock).toHaveBeenCalledWith('11.11.11.11')
   })
+
+  it('fails open (calls next(), no 429) when the Upstash limiter throws for the registro middleware', async () => {
+    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
+
+    const limitMock = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'))
+    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
+    RatelimitMock.slidingWindow = vi.fn().mockReturnValue('sliding-window-config')
+    const RedisMock = vi.fn().mockImplementation(() => ({}))
+
+    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
+    vi.resetModules()
+
+    const { registroRateLimitMiddleware } = await import('./rate-limit.js')
+    const app = new Hono()
+    app.post('/registro', registroRateLimitMiddleware, (c) => c.json({ ok: true }))
+
+    const res = await app.request('/registro', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '44.44.44.44' },
+    })
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ ok: true })
+    expect(limitMock).toHaveBeenCalledWith('44.44.44.44')
+  })
+
+  it('fails open (calls next(), no 429) when the Upstash limiter throws for the upload middleware', async () => {
+    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
+
+    const limitMock = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'))
+    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
+    RatelimitMock.slidingWindow = vi.fn().mockReturnValue('sliding-window-config')
+    const RedisMock = vi.fn().mockImplementation(() => ({}))
+
+    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
+    vi.resetModules()
+
+    const { uploadRateLimitMiddleware } = await import('./rate-limit.js')
+    const app = new Hono()
+    app.post('/upload', uploadRateLimitMiddleware, (c) => c.json({ ok: true }))
+
+    const res = await app.request('/upload', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '55.55.55.55' },
+    })
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ ok: true })
+    expect(limitMock).toHaveBeenCalledWith('55.55.55.55')
+  })
 })
