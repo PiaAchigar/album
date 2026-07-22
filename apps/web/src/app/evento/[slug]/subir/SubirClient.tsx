@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Camera, Check, Images, X } from 'lucide-react'
+import imageCompression from 'browser-image-compression'
 import { useInvitado } from '@/hooks/useInvitado'
 import { apiClient, ApiError } from '@/lib/api-client'
 import { obtenerContadoresInvitado } from '@/app/(organizador)/actions/invitados.actions'
@@ -19,7 +20,7 @@ interface Props {
 }
 
 type Tipo = 'foto' | 'video'
-type ItemStatus = 'uploading' | 'done' | 'error'
+type ItemStatus = 'compressing' | 'uploading' | 'done' | 'error'
 
 interface UploadItem {
   id: string
@@ -173,13 +174,34 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
       typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
     const previewUrl = tipo === 'foto' ? URL.createObjectURL(file) : null
 
-    setItems((prev) => [...prev, { id, tipo, previewUrl, progress: 0, status: 'uploading' }])
+    setItems((prev) => [
+      ...prev,
+      { id, tipo, previewUrl, progress: 0, status: tipo === 'foto' ? 'compressing' : 'uploading' },
+    ])
+
+    let uploadableFile = file
+    if (tipo === 'foto') {
+      try {
+        const compressedBlob = await imageCompression(file, {
+          maxSizeMB: 2,
+          maxWidthOrHeight: 2048,
+          useWebWorker: true,
+          fileType: file.type,
+        })
+        uploadableFile = new File([compressedBlob], file.name, { type: file.type })
+      } catch {
+        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'error' } : it)))
+        toast.error('No se pudo comprimir la imagen. Intentá de nuevo.')
+        return
+      }
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'uploading' } : it)))
+    }
 
     try {
       const extension = MIME_TO_EXT[file.type]
       const { upload_url, r2_key } = await apiClient(slug).solicitarSubida(tipo, extension)
 
-      await putWithProgress(upload_url, file, (pct) => {
+      await putWithProgress(upload_url, uploadableFile, (pct) => {
         setItems((prev) => prev.map((it) => (it.id === id ? { ...it, progress: pct } : it)))
       })
 
@@ -376,6 +398,14 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-3xl" aria-hidden="true">
                       🎬
+                    </div>
+                  )}
+
+                  {item.status === 'compressing' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                      <span className="animate-pulse text-[11px] font-semibold text-muted-foreground">
+                        Comprimiendo…
+                      </span>
                     </div>
                   )}
 
