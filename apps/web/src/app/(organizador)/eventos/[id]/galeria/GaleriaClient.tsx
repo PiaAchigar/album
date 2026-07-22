@@ -14,6 +14,7 @@ import {
 import { ImageIcon } from 'lucide-react'
 import type { ArchivoConInvitado } from '@/app/(organizador)/actions/archivos.actions'
 import type { InvitadoConConteos } from '@/app/(organizador)/actions/invitados.actions'
+import { estadoInfo } from '@/lib/archivo-estado'
 
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 
@@ -32,12 +33,6 @@ interface Props {
   archivos: ArchivoConInvitado[]
   invitados: InvitadoConConteos[]
   filters: Filters
-}
-
-function estadoInfo(estado: string) {
-  if (estado === 'aprobada') return { label: 'Aprobada', variant: 'default' as const }
-  if (estado === 'oculta') return { label: 'Oculta', variant: 'destructive' as const }
-  return { label: 'Pendiente', variant: 'secondary' as const }
 }
 
 export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props) {
