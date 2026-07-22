@@ -7,6 +7,7 @@ import { eventos, invitados, archivos } from '@album/database'
 import { getInvitadoPresignedUpload } from '../lib/r2.js'
 import { uploadRateLimitMiddleware } from '../middleware/rate-limit.js'
 import { jwtInvitadoMiddleware } from '../middleware/jwt-invitado.js'
+import { logger } from '../lib/logger.js'
 
 const ALLOWED_EXTENSIONS: Record<'foto' | 'video', string[]> = {
   foto: ['jpg', 'jpeg', 'png', 'heic', 'webp'],
@@ -69,6 +70,10 @@ export function createArchivosRoutes() {
       // validate after.
       if (tipo === 'foto') {
         if (invitado.fotos_subidas >= evento.limite_fotos_por_invitado) {
+          logger.warn(
+            { invitado_id, tipo, evento_id: evento.id },
+            'Subida rechazada: cupo de archivos agotado',
+          )
           return c.json(
             { error: `Ya usaste tus ${evento.limite_fotos_por_invitado} fotos` },
             403,
@@ -76,6 +81,10 @@ export function createArchivosRoutes() {
         }
       } else {
         if (invitado.videos_subidos >= evento.limite_videos_por_invitado) {
+          logger.warn(
+            { invitado_id, tipo, evento_id: evento.id },
+            'Subida rechazada: cupo de archivos agotado',
+          )
           return c.json(
             { error: `Ya usaste tus ${evento.limite_videos_por_invitado} videos` },
             403,
@@ -88,6 +97,7 @@ export function createArchivosRoutes() {
         invitado_id,
         ext,
       )
+      logger.info({ invitado_id, tipo, evento_id: evento.id }, 'Presigned URL generada')
       return c.json({ upload_url: uploadUrl, r2_key: r2Key }, 200)
     },
   )
@@ -138,6 +148,8 @@ export function createArchivosRoutes() {
           estado: 'pendiente',
         })
         .returning({ id: archivos.id })
+
+      logger.info({ archivo_id: inserted.id, r2_key, invitado_id }, 'Archivo confirmado en DB')
 
       if (tipo === 'foto') {
         await db

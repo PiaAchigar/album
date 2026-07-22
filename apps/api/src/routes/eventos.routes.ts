@@ -6,6 +6,8 @@ import { db } from '../db/index.js'
 import { eventos, invitados } from '@album/database'
 import { signInvitadoToken } from '../lib/jwt.js'
 import { registroRateLimitMiddleware } from '../middleware/rate-limit.js'
+import { logger } from '../lib/logger.js'
+import { getIP } from '../lib/ip.js'
 
 const registroSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio').max(100),
@@ -46,6 +48,7 @@ export function createEventosRoutes() {
         .where(eq(invitados.evento_id, evento.id))
 
       if (currentCount >= evento.limite_invitados_login) {
+        logger.warn({ evento_id: evento.id, ip: getIP(c) }, 'Registro rechazado: cupo lleno')
         return c.json(
           { error: 'Cupo de invitados alcanzado, hablá con el organizador' },
           409,
@@ -76,6 +79,8 @@ export function createEventosRoutes() {
 
       // 5. Persist the real token as token_sesion
       await db.update(invitados).set({ token_sesion: token }).where(eq(invitados.id, inserted.id))
+
+      logger.info({ invitado_id: inserted.id, evento_id: evento.id, ip: getIP(c) }, 'Invitado registrado')
 
       return c.json({ token, invitado_id: inserted.id }, 201)
     },

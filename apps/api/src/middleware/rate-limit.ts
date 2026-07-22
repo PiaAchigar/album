@@ -1,6 +1,8 @@
-import type { Context, MiddlewareHandler } from 'hono'
+import type { MiddlewareHandler } from 'hono'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { getIP } from '../lib/ip.js'
+import { logger } from '../lib/logger.js'
 
 interface RateLimitEntry {
   count: number
@@ -9,21 +11,10 @@ interface RateLimitEntry {
 
 const RATE_LIMIT_MESSAGE = 'Demasiadas solicitudes. Esperá un momento e intentá de nuevo.'
 
-// Same IP-extraction order everywhere: Cloudflare's header first (trusted,
-// set by our own CF proxy), then the standard forwarded-for chain, then
-// x-real-ip, then a fallback bucket for anything unidentifiable.
-function extractIp(c: Context): string {
-  return (
-    c.req.header('cf-connecting-ip') ??
-    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
-    c.req.header('x-real-ip') ??
-    'unknown'
-  )
-}
-
 function createInMemoryRateLimiter(
   maxRequests: number,
   windowMs: number,
+  label: string,
 ): MiddlewareHandler {
   const store = new Map<string, RateLimitEntry>()
 
@@ -40,7 +31,7 @@ function createInMemoryRateLimiter(
   pruneInterval.unref?.()
 
   return async (c, next) => {
-    const ip = extractIp(c)
+    const ip = getIP(c)
 
     const now = Date.now()
     const entry = store.get(ip)
@@ -51,6 +42,7 @@ function createInMemoryRateLimiter(
     }
 
     if (entry.count >= maxRequests) {
+      logger.warn({ ip, label }, 'Rate limit excedido')
       return c.json({ error: RATE_LIMIT_MESSAGE }, 429)
     }
 
@@ -73,12 +65,13 @@ function createUpstashRateLimiter(
   })
 
   return async (c, next) => {
-    const ip = extractIp(c)
+    const ip = getIP(c)
 
     try {
       const { success } = await limiter.limit(ip)
 
       if (!success) {
+        logger.warn({ ip, label }, 'Rate limit excedido')
         return c.json({ error: RATE_LIMIT_MESSAGE }, 429)
       }
     } catch (error) {
@@ -111,7 +104,7 @@ function createRateLimiter(
     return createUpstashRateLimiter(maxRequests, windowMs, url, token, label)
   }
 
-  return createInMemoryRateLimiter(maxRequests, windowMs)
+  return createInMemoryRateLimiter(maxRequests, windowMs, label)
 }
 
 // 10 requests per minute for registration

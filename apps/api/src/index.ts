@@ -6,6 +6,7 @@ import { sql } from 'drizzle-orm'
 import { corsMiddleware } from './middleware/cors.js'
 import { createEventosRoutes } from './routes/eventos.routes.js'
 import { createArchivosRoutes } from './routes/archivos.routes.js'
+import { logger } from './lib/logger.js'
 
 const app = new Hono()
 
@@ -32,7 +33,7 @@ app.route('/', createEventosRoutes())
 app.route('/', createArchivosRoutes())
 
 const port = Number(process.env.PORT ?? 3001)
-console.log(`API running on http://localhost:${port}`)
+logger.info({ port, env: process.env.NODE_ENV }, 'API lista')
 
 serve({ fetch: app.fetch, port })
 
