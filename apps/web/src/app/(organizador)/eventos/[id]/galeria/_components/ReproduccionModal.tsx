@@ -19,6 +19,7 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
   const [index, setIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [progress, setProgress] = useState(0)
+  const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const archivo = archivos[index]
@@ -55,8 +56,16 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
     return () => clearInterval(timer)
   }, [isPlaying, archivo, goNext])
 
+  // Se resetea la duración conocida cada vez que cambia el slide actual.
+  useEffect(() => {
+    setVideoDuration(null)
+  }, [archivo])
+
   // Videos: autoplay/muted, avanzan en 'ended'. Timeout de seguridad para
   // que el carrusel nunca quede trabado si el video no dispara 'ended'.
+  // El timeout se basa en la duración real del video (una vez conocida) más
+  // un margen de 2s; solo cae al fijo de 15s si la duración es desconocida
+  // (metadata no cargó, o es Infinity/NaN de un archivo roto).
   useEffect(() => {
     if (!archivo || archivo.tipo !== 'video') return
 
@@ -67,12 +76,17 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
       videoEl?.pause()
     }
 
+    const safetyTimeoutMs =
+      videoDuration !== null && Number.isFinite(videoDuration) && videoDuration > 0
+        ? videoDuration * 1000 + 2000
+        : VIDEO_SAFETY_TIMEOUT_MS
+
     const safetyTimeout = setTimeout(() => {
       if (isPlaying) goNext()
-    }, VIDEO_SAFETY_TIMEOUT_MS)
+    }, safetyTimeoutMs)
 
     return () => clearTimeout(safetyTimeout)
-  }, [archivo, isPlaying, goNext])
+  }, [archivo, isPlaying, goNext, videoDuration])
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -121,6 +135,7 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
             autoPlay
             playsInline
             onEnded={goNext}
+            onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
             onTimeUpdate={(e) => {
               const v = e.currentTarget
               if (v.duration) setProgress((v.currentTime / v.duration) * 100)
