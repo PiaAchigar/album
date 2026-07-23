@@ -1,10 +1,11 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { eventos } from '@album/database'
+import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { generateSlug } from '@/lib/slug'
-import { eq } from 'drizzle-orm'
+import { deleteR2Object } from '@/lib/r2'
+import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
 export type EventoRow = typeof eventos.$inferSelect
@@ -132,4 +133,68 @@ export async function obtenerEvento(id: string): Promise<EventoRow | null> {
     .where(eq(eventos.id, id))
 
   return evento ?? null
+}
+
+export async function cambiarEstadoEvento(
+  eventoId: string,
+  nuevoEstado: 'activo' | 'cerrado',
+): Promise<{ success: true } | { error: string }> {
+  try {
+    const organizadorId = await getOrganizadorId()
+
+    const [existing] = await db
+      .select({ estado: eventos.estado })
+      .from(eventos)
+      .where(and(eq(eventos.id, eventoId), eq(eventos.organizador_id, organizadorId)))
+
+    if (!existing) return { error: 'Evento no encontrado' }
+    if (existing.estado !== 'activo' && existing.estado !== 'cerrado') {
+      return { error: 'Solo se puede cerrar o reactivar un evento activo' }
+    }
+
+    await db.update(eventos).set({ estado: nuevoEstado }).where(eq(eventos.id, eventoId))
+
+    revalidatePath('/eventos', 'page')
+    return { success: true }
+  } catch (err) {
+    console.error('[cambiarEstadoEvento]', err)
+    return { error: 'No se pudo actualizar el estado del evento' }
+  }
+}
+
+export async function eliminarEvento(
+  eventoId: string,
+): Promise<{ success: true } | { error: string }> {
+  try {
+    const organizadorId = await getOrganizadorId()
+
+    const [evento] = await db
+      .select({ foto_portada_url: eventos.foto_portada_url })
+      .from(eventos)
+      .where(and(eq(eventos.id, eventoId), eq(eventos.organizador_id, organizadorId)))
+
+    if (!evento) return { error: 'Evento no encontrado' }
+
+    const archivosDelEvento = await db
+      .select({ r2_key: archivos.r2_key })
+      .from(archivos)
+      .where(eq(archivos.evento_id, eventoId))
+
+    const keysABorrar = archivosDelEvento.map((a) => a.r2_key)
+    if (evento.foto_portada_url) keysABorrar.push(evento.foto_portada_url)
+
+    // Orden crítico: R2 primero. Si falla algún borrado, no se toca la DB.
+    await Promise.all(keysABorrar.map((key) => deleteR2Object(key)))
+
+    // Orden por FKs: archivos -> invitados -> eventos.
+    await db.delete(archivos).where(eq(archivos.evento_id, eventoId))
+    await db.delete(invitados).where(eq(invitados.evento_id, eventoId))
+    await db.delete(eventos).where(eq(eventos.id, eventoId))
+
+    revalidatePath('/eventos', 'page')
+    return { success: true }
+  } catch (err) {
+    console.error('[eliminarEvento]', err)
+    return { error: 'No se pudo eliminar el evento' }
+  }
 }

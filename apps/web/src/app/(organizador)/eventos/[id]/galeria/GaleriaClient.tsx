@@ -1,9 +1,12 @@
 'use client'
 
+import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -11,10 +14,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ImageIcon } from 'lucide-react'
-import type { ArchivoConInvitado } from '@/app/(organizador)/actions/archivos.actions'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { ImageIcon, Play, Trash2 } from 'lucide-react'
+import {
+  eliminarArchivo,
+  type ArchivoConInvitado,
+} from '@/app/(organizador)/actions/archivos.actions'
 import type { InvitadoConConteos } from '@/app/(organizador)/actions/invitados.actions'
 import { estadoInfo } from '@/lib/archivo-estado'
+import { ReproduccionModal } from './_components/ReproduccionModal'
 
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 
@@ -31,14 +49,23 @@ interface Filters {
 interface Props {
   eventoId: string
   archivos: ArchivoConInvitado[]
+  archivosAprobados: ArchivoConInvitado[]
   invitados: InvitadoConConteos[]
   filters: Filters
 }
 
-export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props) {
+export function GaleriaClient({
+  eventoId,
+  archivos,
+  archivosAprobados,
+  invitados,
+  filters,
+}: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
+  const [reproduccionAbierta, setReproduccionAbierta] = useState(false)
 
   function updateFilter(key: keyof Filters, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -50,13 +77,37 @@ export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props)
     router.push(`${pathname}?${params.toString()}`)
   }
 
+  function handleEliminar(archivoId: string) {
+    startTransition(async () => {
+      const result = await eliminarArchivo(archivoId)
+      if ('error' in result) {
+        toast.error(result.error)
+        return
+      }
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Galería</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {archivos.length} {archivos.length === 1 ? 'archivo' : 'archivos'}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Galería</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {archivos.length} {archivos.length === 1 ? 'archivo' : 'archivos'}
+          </p>
+        </div>
+        {archivosAprobados.length > 0 && (
+          <Button
+            type="button"
+            size="sm"
+            className="gap-2"
+            onClick={() => setReproduccionAbierta(true)}
+          >
+            <Play className="h-4 w-4" aria-hidden="true" />
+            Reproducir
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -119,39 +170,84 @@ export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props)
           {archivos.map((archivo) => {
             const { label, variant } = estadoInfo(archivo.estado)
             return (
-              <Link
+              <div
                 key={archivo.id}
-                href={`/eventos/${eventoId}/galeria/${archivo.id}`}
                 className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-card"
               >
-                {archivo.tipo === 'video' ? (
-                  <div className="flex h-full w-full items-center justify-center bg-neutral-900 text-4xl">
-                    🎬
+                <Link
+                  href={`/eventos/${eventoId}/galeria/${archivo.id}`}
+                  className="absolute inset-0 z-0 block"
+                >
+                  {archivo.tipo === 'video' ? (
+                    <div className="flex h-full w-full items-center justify-center bg-neutral-900 text-4xl">
+                      🎬
+                    </div>
+                  ) : (
+                    <Image
+                      src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
+                      alt={`Foto de ${archivo.invitado_nombre} ${archivo.invitado_apellido}`}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    />
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="absolute inset-x-0 bottom-0 z-10 p-3 opacity-0 transition-opacity group-hover:opacity-100">
+                    <p className="truncate text-sm font-medium text-white">
+                      {archivo.invitado_nombre} {archivo.invitado_apellido}
+                    </p>
                   </div>
-                ) : (
-                  <Image
-                    src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
-                    alt={`Foto de ${archivo.invitado_nombre} ${archivo.invitado_apellido}`}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                )}
+                </Link>
 
                 <div className="absolute right-2 top-2 z-20">
                   <Badge variant={variant}>{label}</Badge>
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="absolute inset-x-0 bottom-0 z-10 p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                  <p className="truncate text-sm font-medium text-white">
-                    {archivo.invitado_nombre} {archivo.invitado_apellido}
-                  </p>
-                </div>
-              </Link>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      aria-label="Eliminar archivo"
+                      className="absolute left-2 top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white opacity-100 backdrop-blur-sm transition-opacity hover:bg-destructive disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Eliminar este archivo?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción borra el archivo de forma permanente, tanto de la galería
+                        como del almacenamiento. No se puede deshacer.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleEliminar(archivo.id)
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Eliminar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )
           })}
         </div>
+      )}
+
+      {reproduccionAbierta && (
+        <ReproduccionModal
+          archivos={archivosAprobados}
+          onClose={() => setReproduccionAbierta(false)}
+        />
       )}
     </div>
   )
