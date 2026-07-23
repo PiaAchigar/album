@@ -145,7 +145,7 @@ export function createArchivosRoutes() {
           invitado_id,
           tipo,
           r2_key,
-          estado: 'pendiente',
+          estado: 'aprobada',
         })
         .returning({ id: archivos.id })
 

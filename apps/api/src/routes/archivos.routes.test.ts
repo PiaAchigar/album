@@ -70,11 +70,11 @@ function queueSelects(...results: unknown[][]) {
 }
 
 function mockInsertReturning(id: string) {
-  insertMock.mockImplementation(() => ({
-    values: () => ({
-      returning: async () => [{ id }],
-    }),
+  const valuesMock = vi.fn(() => ({
+    returning: async () => [{ id }],
   }))
+  insertMock.mockImplementation(() => ({ values: valuesMock }))
+  return valuesMock
 }
 
 function mockUpdateOk() {
@@ -280,6 +280,25 @@ describe('POST /eventos/:slug/archivos/confirmar', () => {
     expect(body.archivo_id).toBe('arch-1')
     expect(insertMock).toHaveBeenCalledTimes(1)
     expect(updateMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('inserts the archivo with estado "aprobada" (uploads no longer require pre-moderation)', async () => {
+    queueSelects([mockEvento])
+    const valuesMock = mockInsertReturning('arch-1')
+
+    await confirmar(
+      'boda-test-abc123',
+      {
+        r2_key: 'eventos/evt-1/inv-1/generated-name.jpg',
+        tipo: 'foto',
+        extension: 'jpg',
+      },
+      await authHeader(),
+    )
+
+    expect(valuesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ estado: 'aprobada' }),
+    )
   })
 
   it('returns 201 and increments videos_subidos for tipo video', async () => {
