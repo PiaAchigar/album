@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { eventos, invitados, archivos } from '@album/database'
-import { getInvitadoPresignedUpload } from '../lib/r2.js'
+import { getInvitadoPresignedUpload, deleteR2Object } from '../lib/r2.js'
 import { uploadRateLimitMiddleware } from '../middleware/rate-limit.js'
 import { jwtInvitadoMiddleware } from '../middleware/jwt-invitado.js'
 import { logger } from '../lib/logger.js'
@@ -164,6 +164,96 @@ export function createArchivosRoutes() {
       }
 
       return c.json({ archivo_id: inserted.id }, 201)
+    },
+  )
+
+  app.get(
+    '/eventos/:slug/archivos/mis-archivos',
+    jwtInvitadoMiddleware,
+    async (c) => {
+      const { slug } = c.req.param()
+      const { invitado_id, evento_id } = c.get('invitado')
+
+      const [evento] = await db
+        .select()
+        .from(eventos)
+        .where(eq(eventos.slug, slug))
+        .limit(1)
+
+      if (!evento) return c.json({ error: 'Evento no encontrado' }, 404)
+      if (evento_id !== evento.id) {
+        return c.json({ error: 'Token no válido para este evento' }, 403)
+      }
+
+      const rows = await db
+        .select({
+          id: archivos.id,
+          tipo: archivos.tipo,
+          r2_key: archivos.r2_key,
+          estado: archivos.estado,
+          created_at: archivos.created_at,
+        })
+        .from(archivos)
+        .where(and(eq(archivos.evento_id, evento.id), eq(archivos.invitado_id, invitado_id)))
+        .orderBy(archivos.created_at)
+
+      return c.json({ archivos: rows }, 200)
+    },
+  )
+
+  app.delete(
+    '/eventos/:slug/archivos/:archivoId',
+    uploadRateLimitMiddleware,
+    jwtInvitadoMiddleware,
+    async (c) => {
+      const { slug, archivoId } = c.req.param()
+      const { invitado_id, evento_id } = c.get('invitado')
+
+      const [evento] = await db
+        .select()
+        .from(eventos)
+        .where(eq(eventos.slug, slug))
+        .limit(1)
+
+      if (!evento) return c.json({ error: 'Evento no encontrado' }, 404)
+      if (evento_id !== evento.id) {
+        return c.json({ error: 'Token no válido para este evento' }, 403)
+      }
+
+      const [archivo] = await db
+        .select()
+        .from(archivos)
+        .where(
+          and(
+            eq(archivos.id, archivoId),
+            eq(archivos.evento_id, evento.id),
+            eq(archivos.invitado_id, invitado_id),
+          ),
+        )
+        .limit(1)
+
+      if (!archivo) return c.json({ error: 'Archivo no encontrado' }, 404)
+
+      // Orden crítico: R2 primero. Si falla, no se toca la DB ni el contador.
+      await deleteR2Object(archivo.r2_key)
+
+      await db.delete(archivos).where(eq(archivos.id, archivoId))
+
+      if (archivo.tipo === 'foto') {
+        await db
+          .update(invitados)
+          .set({ fotos_subidas: sql`GREATEST(${invitados.fotos_subidas} - 1, 0)` })
+          .where(eq(invitados.id, invitado_id))
+      } else {
+        await db
+          .update(invitados)
+          .set({ videos_subidos: sql`GREATEST(${invitados.videos_subidos} - 1, 0)` })
+          .where(eq(invitados.id, invitado_id))
+      }
+
+      logger.info({ archivo_id: archivoId, invitado_id }, 'Archivo eliminado por invitado')
+
+      return c.json({ success: true }, 200)
     },
   )
 

@@ -16,7 +16,7 @@ export default async function QRPage({ params }: Props) {
 
   if (!evento) notFound()
 
-  const eventUrl = `${process.env.PUBLIC_APP_URL ?? 'https://www.album.com.ar'}/evento/${evento.slug}`
+  const eventUrl = `${process.env.PUBLIC_APP_URL ?? 'https://www.album.com.ar'}/e/${evento.slug}`
 
   const qrDataUrl = await QRCode.toDataURL(eventUrl, {
     width: 400,

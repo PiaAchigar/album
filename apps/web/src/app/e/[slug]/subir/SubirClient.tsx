@@ -4,12 +4,24 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Camera, Check, Images, X } from 'lucide-react'
+import { Camera, Check, Images, Trash2, X } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import { useInvitado } from '@/hooks/useInvitado'
 import { apiClient, ApiError } from '@/lib/api-client'
 import { obtenerContadoresInvitado } from '@/app/(organizador)/actions/invitados.actions'
 import { Progress } from '@/components/ui/progress'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+
+const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 
 interface Props {
   slug: string
@@ -24,8 +36,10 @@ type ItemStatus = 'compressing' | 'uploading' | 'done' | 'error'
 
 interface UploadItem {
   id: string
+  archivoId: string | null
   tipo: Tipo
   previewUrl: string | null
+  r2Key: string | null
   progress: number
   status: ItemStatus
 }
@@ -109,6 +123,9 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
   const [items, setItems] = useState<UploadItem[]>([])
   const itemsRef = useRef<UploadItem[]>([])
 
+  const [deleteTarget, setDeleteTarget] = useState<UploadItem | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
@@ -117,7 +134,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
   // localStorage has actually been read.
   useEffect(() => {
     if (isLoaded && !token) {
-      router.replace(`/evento/${slug}/registro`)
+      router.replace(`/e/${slug}/registro`)
     }
   }, [isLoaded, token, router, slug])
 
@@ -149,6 +166,41 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
     }
   }, [invitadoId])
 
+  // Load the guest's previously uploaded files once on mount, so "Tus
+  // recuerdos" survives a page reload instead of only showing whatever was
+  // uploaded in the current browser session.
+  useEffect(() => {
+    if (!token) return
+    let cancelled = false
+
+    apiClient(slug)
+      .misArchivos()
+      .then(({ archivos: rows }) => {
+        if (cancelled) return
+        setItems((prev) => [
+          ...rows.map(
+            (row): UploadItem => ({
+              id: row.id,
+              archivoId: row.id,
+              tipo: row.tipo,
+              previewUrl: null,
+              r2Key: row.r2_key,
+              progress: 100,
+              status: 'done',
+            })
+          ),
+          ...prev,
+        ])
+      })
+      .catch(() => {
+        if (!cancelled) toast.error('No pudimos cargar tus fotos y videos anteriores.')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [token, slug])
+
   useEffect(() => {
     itemsRef.current = items
   }, [items])
@@ -176,7 +228,15 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
 
     setItems((prev) => [
       ...prev,
-      { id, tipo, previewUrl, progress: 0, status: tipo === 'foto' ? 'compressing' : 'uploading' },
+      {
+        id,
+        archivoId: null,
+        tipo,
+        previewUrl,
+        r2Key: null,
+        progress: 0,
+        status: tipo === 'foto' ? 'compressing' : 'uploading',
+      },
     ])
 
     let uploadableFile = file
@@ -205,10 +265,14 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
         setItems((prev) => prev.map((it) => (it.id === id ? { ...it, progress: pct } : it)))
       })
 
-      await apiClient(slug).confirmarSubida(r2_key, tipo, extension)
+      const { archivo_id } = await apiClient(slug).confirmarSubida(r2_key, tipo, extension)
 
       setItems((prev) =>
-        prev.map((it) => (it.id === id ? { ...it, status: 'done', progress: 100 } : it))
+        prev.map((it) =>
+          it.id === id
+            ? { ...it, archivoId: archivo_id, r2Key: r2_key, status: 'done', progress: 100 }
+            : it
+        )
       )
       setCounters({
         fotos: countersRef.current.fotos + (tipo === 'foto' ? 1 : 0),
@@ -223,6 +287,33 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
             ? err.message
             : 'No se pudo subir el archivo. Intentá de nuevo.'
       toast.error(message)
+    }
+  }
+
+  async function handleEliminarConfirmado() {
+    if (!deleteTarget?.archivoId) return
+
+    setIsDeleting(true)
+    try {
+      await apiClient(slug).eliminarArchivo(deleteTarget.archivoId)
+
+      if (deleteTarget.previewUrl) URL.revokeObjectURL(deleteTarget.previewUrl)
+      setItems((prev) => prev.filter((it) => it.id !== deleteTarget.id))
+      setCounters({
+        fotos: countersRef.current.fotos - (deleteTarget.tipo === 'foto' ? 1 : 0),
+        videos: countersRef.current.videos - (deleteTarget.tipo === 'video' ? 1 : 0),
+      })
+      setDeleteTarget(null)
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'No se pudo eliminar el archivo. Intentá de nuevo.'
+      toast.error(message)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -285,7 +376,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
     <div className="flex min-h-screen flex-col bg-backdrop">
       <header className="fixed top-0 z-30 flex h-12 w-full items-center justify-between bg-background/80 px-4 backdrop-blur-md">
         <Link
-          href={`/evento/${slug}`}
+          href={`/e/${slug}`}
           aria-label="Volver al evento"
           className="flex h-8 w-8 items-center justify-center text-primary transition-opacity active:opacity-70"
         >
@@ -388,10 +479,10 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
                   key={item.id}
                   className="relative aspect-square overflow-hidden rounded-xl bg-muted shadow-sm"
                 >
-                  {item.tipo === 'foto' && item.previewUrl ? (
+                  {item.tipo === 'foto' && (item.previewUrl || item.r2Key) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={item.previewUrl}
+                      src={item.previewUrl ?? `${R2_PUBLIC_URL}/${item.r2Key}`}
                       alt=""
                       className="h-full w-full object-cover"
                     />
@@ -416,9 +507,21 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
                   )}
 
                   {item.status === 'done' && (
-                    <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white">
-                      <Check className="h-3 w-3" aria-hidden="true" />
-                    </div>
+                    <>
+                      <div className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white">
+                        <Check className="h-3 w-3" aria-hidden="true" />
+                      </div>
+                      {item.archivoId && (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTarget(item)}
+                          aria-label="Eliminar"
+                          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      )}
+                    </>
                   )}
 
                   {item.status === 'error' && (
@@ -432,6 +535,30 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
           )}
         </section>
       </main>
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar este archivo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción borra tu foto o video de forma permanente. No se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault()
+                handleEliminarConfirmado()
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Eliminando…' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

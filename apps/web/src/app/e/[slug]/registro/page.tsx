@@ -85,7 +85,7 @@ export default function RegistroPage({ params }: Props) {
       localStorage.setItem(`album_token_${slug}`, token)
       localStorage.setItem(`album_invitado_${slug}`, invitado_id)
 
-      router.push(`/evento/${slug}/subir`)
+      router.push(`/e/${slug}/subir`)
     } catch {
       setServerError('No se pudo conectar. Verificá tu conexión e intentá de nuevo.')
     }
@@ -101,7 +101,7 @@ export default function RegistroPage({ params }: Props) {
       */}
       <header className="fixed top-0 z-30 flex h-12 w-full items-center justify-between bg-background/80 px-4 backdrop-blur-md">
         <Link
-          href={`/evento/${slug}`}
+          href={`/e/${slug}`}
           aria-label="Volver al evento"
           className="flex h-8 w-8 items-center justify-center text-primary transition-opacity active:opacity-70"
         >

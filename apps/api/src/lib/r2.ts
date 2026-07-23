@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { nanoid } from 'nanoid'
 
@@ -33,4 +33,13 @@ export async function getInvitadoPresignedUpload(
 
   const uploadUrl = await getSignedUrl(client, command, { expiresIn: 300 })
   return { uploadUrl, r2Key }
+}
+
+export async function deleteR2Object(r2Key: string): Promise<void> {
+  const bucket = process.env.R2_BUCKET_NAME
+  if (!bucket) throw new Error('R2_BUCKET_NAME is not set')
+
+  const client = getS3Client()
+
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: r2Key }))
 }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { obtenerEvento } from '@/app/(organizador)/actions/eventos.actions'
 import { obtenerEstadisticasEvento } from '@/app/(organizador)/actions/archivos.actions'
-import { AlertTriangleIcon, ImageIcon, UsersIcon, VideoIcon } from 'lucide-react'
+import { AlertTriangleIcon, ImageIcon, QrCodeIcon, UsersIcon, VideoIcon } from 'lucide-react'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -86,6 +86,12 @@ export default async function ResumenEventoPage({ params }: Props) {
         </Button>
         <Button asChild variant="outline">
           <Link href={`/eventos/${id}/invitados`}>Ver invitados</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href={`/eventos/${id}/qr`}>
+            <QrCodeIcon className="h-4 w-4" aria-hidden="true" />
+            Ver QR
+          </Link>
         </Button>
       </div>
     </div>

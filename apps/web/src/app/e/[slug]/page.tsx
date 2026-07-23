@@ -115,7 +115,7 @@ export default async function EventoLandingPage({ params }: Props) {
             size="lg"
             className="h-16 w-full gap-3 rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-lg hover:bg-primary/90"
           >
-            <Link href={`/evento/${slug}/registro`}>
+            <Link href={`/e/${slug}/registro`}>
               <Camera className="h-5 w-5" aria-hidden="true" />
               Quiero subir mis fotos
             </Link>

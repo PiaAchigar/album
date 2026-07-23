@@ -53,5 +53,28 @@ export function apiClient(slug: string) {
       })
       return handleResponse<{ archivo_id: string }>(res)
     },
+
+    async misArchivos(): Promise<{
+      archivos: Array<{
+        id: string
+        tipo: 'foto' | 'video'
+        r2_key: string
+        estado: string
+        created_at: string | null
+      }>
+    }> {
+      const res = await fetch(`${API_URL}/eventos/${slug}/archivos/mis-archivos`, {
+        headers: authHeaders(),
+      })
+      return handleResponse(res)
+    },
+
+    async eliminarArchivo(archivoId: string): Promise<{ success: true }> {
+      const res = await fetch(`${API_URL}/eventos/${slug}/archivos/${archivoId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      return handleResponse<{ success: true }>(res)
+    },
   }
 }
