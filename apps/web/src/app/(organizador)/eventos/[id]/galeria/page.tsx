@@ -11,15 +11,17 @@ export default async function GaleriaPage({ params, searchParams }: Props) {
   const { id } = await params
   const { invitadoId, tipo, estado } = await searchParams
 
-  const [archivos, invitados] = await Promise.all([
+  const [archivos, invitados, archivosAprobados] = await Promise.all([
     listarArchivos(id, { invitadoId, tipo, estado }),
     listarInvitados(id),
+    listarArchivos(id, { estado: 'aprobada' }),
   ])
 
   return (
     <GaleriaClient
       eventoId={id}
       archivos={archivos}
+      archivosAprobados={archivosAprobados}
       invitados={invitados}
       filters={{ invitadoId, tipo, estado }}
     />

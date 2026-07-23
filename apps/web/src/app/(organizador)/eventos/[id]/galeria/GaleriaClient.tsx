@@ -1,11 +1,12 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -24,13 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { ImageIcon, Trash2 } from 'lucide-react'
+import { ImageIcon, Play, Trash2 } from 'lucide-react'
 import {
   eliminarArchivo,
   type ArchivoConInvitado,
 } from '@/app/(organizador)/actions/archivos.actions'
 import type { InvitadoConConteos } from '@/app/(organizador)/actions/invitados.actions'
 import { estadoInfo } from '@/lib/archivo-estado'
+import { ReproduccionModal } from './_components/ReproduccionModal'
 
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 
@@ -47,15 +49,23 @@ interface Filters {
 interface Props {
   eventoId: string
   archivos: ArchivoConInvitado[]
+  archivosAprobados: ArchivoConInvitado[]
   invitados: InvitadoConConteos[]
   filters: Filters
 }
 
-export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props) {
+export function GaleriaClient({
+  eventoId,
+  archivos,
+  archivosAprobados,
+  invitados,
+  filters,
+}: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const [reproduccionAbierta, setReproduccionAbierta] = useState(false)
 
   function updateFilter(key: keyof Filters, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -80,11 +90,24 @@ export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props)
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Galería</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {archivos.length} {archivos.length === 1 ? 'archivo' : 'archivos'}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Galería</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {archivos.length} {archivos.length === 1 ? 'archivo' : 'archivos'}
+          </p>
+        </div>
+        {archivosAprobados.length > 0 && (
+          <Button
+            type="button"
+            size="sm"
+            className="gap-2"
+            onClick={() => setReproduccionAbierta(true)}
+          >
+            <Play className="h-4 w-4" aria-hidden="true" />
+            Reproducir
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -218,6 +241,13 @@ export function GaleriaClient({ eventoId, archivos, invitados, filters }: Props)
             )
           })}
         </div>
+      )}
+
+      {reproduccionAbierta && (
+        <ReproduccionModal
+          archivos={archivosAprobados}
+          onClose={() => setReproduccionAbierta(false)}
+        />
       )}
     </div>
   )
