@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { listarEventos } from '@/app/(organizador)/actions/eventos.actions'
 import { logoutOrganizador } from '@/app/(organizador)/actions/auth.actions'
 import { OrganizadorTopbar } from '@/components/organizador-topbar'
+import { EventoActionsMenu } from './_components/EventoActionsMenu'
 import { CalendarIcon, PlusIcon } from 'lucide-react'
 
 function estadoInfo(estado: string) {
@@ -76,10 +77,13 @@ export default async function EventosPage() {
             {misEventos.map((evento) => {
               const { label, variant } = estadoInfo(evento.estado)
               return (
-                <Link key={evento.id} href={`/eventos/${evento.id}`} className="block">
-                  <Card className="border-border shadow-sm transition-shadow hover:shadow-md">
+                <Card
+                  key={evento.id}
+                  className="border-border shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <Link href={`/eventos/${evento.id}`} className="block">
                     <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between gap-2">
                         <CardTitle className="text-base">{evento.nombre_evento}</CardTitle>
                         <Badge variant={variant}>{label}</Badge>
                       </div>
@@ -90,8 +94,11 @@ export default async function EventosPage() {
                         {evento.horario ? ` — ${evento.horario}` : ''}
                       </p>
                     </CardContent>
-                  </Card>
-                </Link>
+                  </Link>
+                  <div className="flex justify-end border-t border-border px-6 py-1.5">
+                    <EventoActionsMenu eventoId={evento.id} estado={evento.estado} />
+                  </div>
+                </Card>
               )
             })}
           </div>
