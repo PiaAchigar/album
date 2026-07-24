@@ -76,5 +76,14 @@ export function apiClient(slug: string) {
       })
       return handleResponse<{ success: true }>(res)
     },
+
+    async reingresar(telefono: string): Promise<{ token: string; invitado_id: string }> {
+      const res = await fetch(`${API_URL}/eventos/${slug}/invitados/reingresar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefono }),
+      })
+      return handleResponse<{ token: string; invitado_id: string }>(res)
+    },
   }
 }
