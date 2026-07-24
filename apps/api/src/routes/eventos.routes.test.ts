@@ -278,3 +278,91 @@ describe('POST /eventos/:slug/invitados', () => {
     expect(res.status).toBe(201)
   })
 })
+
+function postReingreso(slug: string, body: unknown, ip = nextTestIp()) {
+  const router = createEventosRoutes()
+  return router.request(`/eventos/${slug}/invitados/reingresar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+    body: JSON.stringify(body),
+  })
+}
+
+describe('POST /eventos/:slug/invitados/reingresar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    selectQueue.length = 0
+  })
+
+  it('returns 200 with a fresh token when telefono matches an existing invitado', async () => {
+    queueSelects(
+      [mockEvento],
+      [{ id: 'inv-existente', evento_id: 'evt-1', telefono: '099-123-456' }],
+    )
+
+    const res = await postReingreso('boda-test-abc123', { telefono: '099 123 456' })
+    const body = (await res.json()) as { token: string; invitado_id: string }
+
+    expect(res.status).toBe(200)
+    expect(body.invitado_id).toBe('inv-existente')
+    expect(typeof body.token).toBe('string')
+    expect(body.token.split('.')).toHaveLength(3)
+  })
+
+  it('matches regardless of phone formatting differences', async () => {
+    queueSelects(
+      [mockEvento],
+      [{ id: 'inv-existente', evento_id: 'evt-1', telefono: '(099) 123-456' }],
+    )
+
+    const res = await postReingreso('boda-test-abc123', { telefono: '0991 23456' })
+
+    expect(res.status).toBe(200)
+  })
+
+  it('returns 404 when no invitado in this evento has that telefono', async () => {
+    queueSelects([mockEvento], [{ id: 'otro', evento_id: 'evt-1', telefono: '000-000-000' }])
+
+    const res = await postReingreso('boda-test-abc123', { telefono: '099 123 456' })
+    const body = await res.json()
+
+    expect(res.status).toBe(404)
+    expect(body).toEqual({
+      error: 'No encontramos ese teléfono registrado en este evento. ¿Ya te registraste? Probá el formulario de registro.',
+    })
+  })
+
+  it('returns 404 when evento does not exist for the slug', async () => {
+    queueSelects([])
+
+    const res = await postReingreso('no-existe', { telefono: '099 123 456' })
+
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 400 when telefono is missing from the body', async () => {
+    const res = await postReingreso('boda-test-abc123', {})
+
+    expect(res.status).toBe(400)
+  })
+
+  it('is rate limited via registroRateLimitMiddleware after repeated requests from the same IP', async () => {
+    queueSelects(...Array.from({ length: 11 }, () => [[mockEvento], []]).flat())
+
+    const router = createEventosRoutes()
+    let lastStatus = 0
+    for (let i = 0; i < 11; i++) {
+      const res = await router.request('/eventos/boda-test-abc123/invitados/reingresar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '9.9.9.8' },
+        body: JSON.stringify({ telefono: '099 123 456' }),
+      })
+      lastStatus = res.status
+    }
+
+    expect(lastStatus).toBe(429)
+  })
+})

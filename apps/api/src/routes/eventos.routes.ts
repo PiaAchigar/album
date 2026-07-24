@@ -137,5 +137,50 @@ export function createEventosRoutes() {
     },
   )
 
+  router.post(
+    '/eventos/:slug/invitados/reingresar',
+    registroRateLimitMiddleware,
+    zValidator('json', z.object({ telefono: z.string().min(1) })),
+    async (c) => {
+      const { slug } = c.req.param()
+      const { telefono } = c.req.valid('json')
+
+      const [evento] = await db.select().from(eventos).where(eq(eventos.slug, slug))
+
+      if (!evento) {
+        return c.json({ error: 'Evento no encontrado' }, 404)
+      }
+
+      const telefonoNormalizado = normalizarTelefono(telefono)
+      const candidatos = await db
+        .select({ id: invitados.id, evento_id: invitados.evento_id, telefono: invitados.telefono })
+        .from(invitados)
+        .where(eq(invitados.evento_id, evento.id))
+
+      const match = candidatos.find(
+        (inv) => inv.telefono && normalizarTelefono(inv.telefono) === telefonoNormalizado,
+      )
+
+      if (!match) {
+        return c.json(
+          {
+            error:
+              'No encontramos ese teléfono registrado en este evento. ¿Ya te registraste? Probá el formulario de registro.',
+          },
+          404,
+        )
+      }
+
+      const token = await signInvitadoToken({
+        invitado_id: match.id,
+        evento_id: evento.id,
+      })
+
+      logger.info({ invitado_id: match.id, evento_id: evento.id }, 'Invitado reingresó por teléfono')
+
+      return c.json({ token, invitado_id: match.id }, 200)
+    },
+  )
+
   return router
 }
