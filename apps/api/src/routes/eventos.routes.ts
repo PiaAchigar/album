@@ -29,16 +29,25 @@ export function createEventosRoutes() {
       const { slug } = c.req.param()
       const body = c.req.valid('json')
 
+      console.log('[POST /eventos/:slug/invitados] start', { slug, ip: getIP(c) })
+
       // 1. Find evento by slug — must exist and be active
       const [evento] = await db.select().from(eventos).where(eq(eventos.slug, slug))
 
       if (!evento) {
+        console.log('[POST /eventos/:slug/invitados] evento no encontrado', { slug })
         return c.json({ error: 'Evento no encontrado' }, 404)
       }
 
       if (evento.estado !== 'activo') {
+        console.log('[POST /eventos/:slug/invitados] evento no activo', {
+          slug,
+          estado: evento.estado,
+        })
         return c.json({ error: 'Este evento no está activo' }, 404)
       }
+
+      console.log('[POST /eventos/:slug/invitados] evento encontrado', { evento_id: evento.id })
 
       // 2. Check capacity BEFORE inserting — count-then-insert is the
       // central business rule for this endpoint (see task brief / CLAUDE.md).
@@ -46,6 +55,11 @@ export function createEventosRoutes() {
         .select({ value: count() })
         .from(invitados)
         .where(eq(invitados.evento_id, evento.id))
+
+      console.log('[POST /eventos/:slug/invitados] cupo', {
+        currentCount,
+        limite: evento.limite_invitados_login,
+      })
 
       if (currentCount >= evento.limite_invitados_login) {
         logger.warn({ evento_id: evento.id, ip: getIP(c) }, 'Registro rechazado: cupo lleno')
@@ -71,14 +85,25 @@ export function createEventosRoutes() {
         })
         .returning({ id: invitados.id })
 
+      console.log('[POST /eventos/:slug/invitados] invitado insertado (placeholder)', {
+        invitado_id: inserted.id,
+      })
+
       // 4. Generate the guest JWT now that we have the invitado id
+      console.log('[POST /eventos/:slug/invitados] firmando JWT', {
+        secretPresente: Boolean(process.env.INVITADO_JWT_SECRET),
+        secretLength: process.env.INVITADO_JWT_SECRET?.length ?? 0,
+      })
       const token = await signInvitadoToken({
         invitado_id: inserted.id,
         evento_id: evento.id,
       })
+      console.log('[POST /eventos/:slug/invitados] JWT firmado OK')
 
       // 5. Persist the real token as token_sesion
       await db.update(invitados).set({ token_sesion: token }).where(eq(invitados.id, inserted.id))
+
+      console.log('[POST /eventos/:slug/invitados] token_sesion persistido')
 
       logger.info({ invitado_id: inserted.id, evento_id: evento.id, ip: getIP(c) }, 'Invitado registrado')
 
