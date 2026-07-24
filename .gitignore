@@ -18,3 +18,7 @@ dist
 
 # Next.js
 next-env.d.ts
+
+# Claude Code (worktrees son repos git embebidos, settings.local es config local)
+.claude/worktrees/
+.claude/settings.local.json
