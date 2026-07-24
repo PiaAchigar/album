@@ -72,9 +72,10 @@ export default function RegistroPage({ params }: Props) {
     setServerError(null)
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+    const url = `${apiUrl}/eventos/${slug}/invitados`
 
     try {
-      const res = await fetch(`${apiUrl}/eventos/${slug}/invitados`, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,13 +86,25 @@ export default function RegistroPage({ params }: Props) {
         }),
       })
 
+      console.log('[registro] response received', {
+        status: res.status,
+        ok: res.ok,
+        url: res.url,
+      })
+
       if (res.status === 409) {
+        console.warn('[registro] rejected: cupo lleno')
         setServerError('Cupo de invitados alcanzado, hablá con el organizador.')
         return
       }
 
       if (!res.ok) {
+        const rawText = await res.clone().text().catch(() => '<no se pudo leer el body>')
         const body = await res.json().catch(() => ({}))
+        console.error('[registro] respuesta no-ok', {
+          status: res.status,
+          rawText,
+        })
         setServerError((body as { error?: string }).error ?? 'Ocurrió un error. Intentá de nuevo.')
         return
       }
@@ -101,11 +114,14 @@ export default function RegistroPage({ params }: Props) {
         invitado_id: string
       }
 
+      console.log('[registro] registro exitoso', { invitado_id })
+
       localStorage.setItem(`album_token_${slug}`, token)
       localStorage.setItem(`album_invitado_${slug}`, invitado_id)
 
       router.push(`/e/${slug}/subir`)
-    } catch {
+    } catch (err) {
+      console.error('[registro] fetch threw (network/CORS)', err)
       setServerError('No se pudo conectar. Verificá tu conexión e intentá de nuevo.')
     }
   }

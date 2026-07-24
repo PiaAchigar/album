@@ -32,6 +32,14 @@ app.get('/health', async (c) => {
 app.route('/', createEventosRoutes())
 app.route('/', createArchivosRoutes())
 
+// Without this, an unhandled exception inside a route (e.g. jwt.ts throwing
+// on a missing/short INVITADO_JWT_SECRET) just becomes a bare 500 with
+// nothing in the Railway logs — impossible to diagnose remotely.
+app.onError((err, c) => {
+  logger.error({ err, path: c.req.path, method: c.req.method }, 'Excepción no manejada')
+  return c.json({ error: 'Internal Server Error' }, 500)
+})
+
 const port = Number(process.env.PORT ?? 3001)
 logger.info({ port, env: process.env.NODE_ENV }, 'API lista')
 
