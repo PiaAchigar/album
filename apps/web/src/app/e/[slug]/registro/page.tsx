@@ -31,7 +31,7 @@ const schema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio').max(100),
   apellido: z.string().min(1, 'El apellido es obligatorio').max(100),
   pais: z.enum(['UY', 'AR', 'PY']),
-  telefono: z.string().max(30).optional().or(z.literal('')),
+  telefono: z.string().min(1, 'El teléfono es obligatorio').max(30),
   acepto_terminos: z.literal(true, {
     errorMap: () => ({ message: 'Tenés que aceptar los Términos y Condiciones para continuar' }),
   }),
@@ -76,7 +76,7 @@ export default function RegistroPage({ params }: Props) {
         body: JSON.stringify({
           nombre: values.nombre,
           apellido: values.apellido,
-          telefono: values.telefono || undefined,
+          telefono: values.telefono,
           acepto_terminos: true,
         }),
       })

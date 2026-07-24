@@ -343,6 +343,16 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
     expect(res.status).toBe(404)
   })
 
+  it('returns 404 when evento exists but is not active (borrador)', async () => {
+    queueSelects([{ ...mockEvento, estado: 'borrador' }])
+
+    const res = await postReingreso('boda-test-abc123', { telefono: '099 123 456' })
+    const body = await res.json()
+
+    expect(res.status).toBe(404)
+    expect(body).toEqual({ error: 'Este evento no está activo' })
+  })
+
   it('returns 400 when telefono is missing from the body', async () => {
     const res = await postReingreso('boda-test-abc123', {})
 

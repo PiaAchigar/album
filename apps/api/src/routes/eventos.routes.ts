@@ -151,6 +151,10 @@ export function createEventosRoutes() {
         return c.json({ error: 'Evento no encontrado' }, 404)
       }
 
+      if (evento.estado !== 'activo') {
+        return c.json({ error: 'Este evento no está activo' }, 404)
+      }
+
       const telefonoNormalizado = normalizarTelefono(telefono)
       const candidatos = await db
         .select({ id: invitados.id, evento_id: invitados.evento_id, telefono: invitados.telefono })
