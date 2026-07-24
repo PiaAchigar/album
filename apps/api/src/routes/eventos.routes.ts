@@ -8,11 +8,12 @@ import { signInvitadoToken } from '../lib/jwt.js'
 import { registroRateLimitMiddleware } from '../middleware/rate-limit.js'
 import { logger } from '../lib/logger.js'
 import { getIP } from '../lib/ip.js'
+import { normalizarTelefono } from '../lib/telefono.js'
 
 const registroSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio').max(100),
   apellido: z.string().min(1, 'El apellido es obligatorio').max(100),
-  telefono: z.string().max(30).optional(),
+  telefono: z.string().min(1, 'El teléfono es obligatorio').max(30),
   acepto_terminos: z.literal(true, {
     errorMap: () => ({ message: 'Debés aceptar los Términos y Condiciones' }),
   }),
@@ -69,6 +70,31 @@ export function createEventosRoutes() {
         )
       }
 
+      // 2.5. Reject a phone number already used by another invitado in this
+      // same evento — same "check before insert" shape as the cupo check
+      // above. Comparison is on the normalized (digits-only) form so
+      // formatting differences ("099 123-456" vs "0991233456") still match.
+      const telefonoNormalizado = normalizarTelefono(body.telefono)
+      const existentesConTelefono = await db
+        .select({ id: invitados.id, telefono: invitados.telefono })
+        .from(invitados)
+        .where(eq(invitados.evento_id, evento.id))
+
+      const yaRegistrado = existentesConTelefono.some(
+        (inv) => inv.telefono && normalizarTelefono(inv.telefono) === telefonoNormalizado,
+      )
+
+      if (yaRegistrado) {
+        console.log('[POST /eventos/:slug/invitados] teléfono duplicado', { evento_id: evento.id })
+        return c.json(
+          {
+            error:
+              "Ese teléfono ya está registrado en este evento. Si ya te registraste, usá 'Entrá con tu teléfono' en la pantalla anterior.",
+          },
+          409,
+        )
+      }
+
       // 3. Insert invitado with a placeholder token_sesion — the real JWT
       // needs the invitado's own id (issued below), so a temporary unique
       // value satisfies the NOT NULL UNIQUE constraint until step 5.
@@ -79,7 +105,7 @@ export function createEventosRoutes() {
           evento_id: evento.id,
           nombre: body.nombre,
           apellido: body.apellido,
-          telefono: body.telefono ?? null,
+          telefono: body.telefono,
           acepto_terminos: true,
           token_sesion: placeholder,
         })

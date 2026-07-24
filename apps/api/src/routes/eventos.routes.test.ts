@@ -69,6 +69,7 @@ function validBody(overrides: Record<string, unknown> = {}) {
   return {
     nombre: 'Ana',
     apellido: 'García',
+    telefono: '099 123 456',
     acepto_terminos: true,
     ...overrides,
   }
@@ -197,12 +198,14 @@ describe('POST /eventos/:slug/invitados', () => {
     expect(insertMock).not.toHaveBeenCalled()
   })
 
-  it('accepts registration without telefono (optional field)', async () => {
-    queueSelects([mockEvento], [{ value: 0 }])
+  it('returns 400 when telefono is missing', async () => {
+    const res = await postInvitado(
+      'boda-test-abc123',
+      { nombre: 'Ana', apellido: 'García', acepto_terminos: true },
+    )
 
-    const res = await postInvitado('boda-test-abc123', validBody())
-
-    expect(res.status).toBe(201)
+    expect(res.status).toBe(400)
+    expect(insertMock).not.toHaveBeenCalled()
   })
 
   it('stores telefono when provided', async () => {
@@ -225,7 +228,7 @@ describe('POST /eventos/:slug/invitados', () => {
   })
 
   it('is rate limited via registroRateLimitMiddleware after repeated requests from the same IP', async () => {
-    queueSelects(...Array.from({ length: 11 }, () => [mockEvento]).flatMap((e) => [e, [{ value: 0 }]]))
+    queueSelects(...Array.from({ length: 11 }, () => [[mockEvento], [{ value: 0 }], []]).flat())
     mockInsertReturning('inv-new')
 
     const router = createEventosRoutes()
@@ -243,5 +246,35 @@ describe('POST /eventos/:slug/invitados', () => {
     }
 
     expect(lastStatus).toBe(429)
+  })
+
+  it('returns 409 when telefono already exists in the same evento (normalized match)', async () => {
+    // select order: evento, cupo count, invitados-por-telefono lookup
+    queueSelects(
+      [mockEvento],
+      [{ value: 0 }],
+      [{ id: 'inv-existente', telefono: '099-123-456' }],
+    )
+
+    const res = await postInvitado(
+      'boda-test-abc123',
+      validBody({ telefono: '099 123 456' }),
+    )
+    const body = await res.json()
+
+    expect(res.status).toBe(409)
+    expect(body).toEqual({
+      error:
+        "Ese teléfono ya está registrado en este evento. Si ya te registraste, usá 'Entrá con tu teléfono' en la pantalla anterior.",
+    })
+    expect(insertMock).not.toHaveBeenCalled()
+  })
+
+  it('allows the same telefono to register in a different evento', async () => {
+    queueSelects([mockEvento], [{ value: 0 }], [])
+
+    const res = await postInvitado('boda-test-abc123', validBody({ telefono: '099 123 456' }))
+
+    expect(res.status).toBe(201)
   })
 })
