@@ -87,12 +87,6 @@ export default function RegistroPage({ params }: Props) {
         url: res.url,
       })
 
-      if (res.status === 409) {
-        console.warn('[registro] rejected: cupo lleno')
-        setServerError('Cupo de invitados alcanzado, hablá con el organizador.')
-        return
-      }
-
       if (!res.ok) {
         const rawText = await res.clone().text().catch(() => '<no se pudo leer el body>')
         const body = await res.json().catch(() => ({}))
@@ -310,6 +304,16 @@ export default function RegistroPage({ params }: Props) {
                 </>
               )}
             </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              ¿Ya te registraste?{' '}
+              <Link
+                href={`/e/${slug}/reingresar`}
+                className="font-bold text-primary hover:underline"
+              >
+                Entrá con tu teléfono
+              </Link>
+            </p>
           </form>
         </Form>
       </main>
