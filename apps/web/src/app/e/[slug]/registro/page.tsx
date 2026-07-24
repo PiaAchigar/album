@@ -11,6 +11,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Form,
   FormControl,
   FormField,
@@ -19,9 +26,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 
+const PAISES = [
+  { value: 'UY', label: 'Uruguay', placeholder: '+598 99 123 456' },
+  { value: 'AR', label: 'Argentina', placeholder: '+54 9 11 1234 5678' },
+  { value: 'PY', label: 'Paraguay', placeholder: '+595 981 123 456' },
+] as const
+
 const schema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio').max(100),
   apellido: z.string().min(1, 'El apellido es obligatorio').max(100),
+  pais: z.enum(['UY', 'AR', 'PY']),
   telefono: z.string().max(30).optional().or(z.literal('')),
   acepto_terminos: z.literal(true, {
     errorMap: () => ({ message: 'Tenés que aceptar los Términos y Condiciones para continuar' }),
@@ -44,10 +58,15 @@ export default function RegistroPage({ params }: Props) {
     defaultValues: {
       nombre: '',
       apellido: '',
+      pais: 'AR',
       telefono: '',
       acepto_terminos: undefined as unknown as true,
     },
   })
+
+  const paisSeleccionado = form.watch('pais')
+  const placeholderTelefono =
+    PAISES.find((p) => p.value === paisSeleccionado)?.placeholder ?? PAISES[1].placeholder
 
   async function onSubmit(values: FormValues) {
     setServerError(null)
@@ -179,30 +198,59 @@ export default function RegistroPage({ params }: Props) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="telefono"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
+            <div className="flex gap-3">
+              <FormField
+                control={form.control}
+                name="pais"
+                render={({ field }) => (
+                  <FormItem className="w-[7.5rem] shrink-0">
                     <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                      Teléfono
+                      País
                     </FormLabel>
-                    <span className="text-[11px] italic text-muted-foreground/70">Opcional</span>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="tel"
-                      placeholder="+54 9 11 1234 5678"
-                      autoComplete="tel"
-                      className="h-12 rounded-xl"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {PAISES.map((pais) => (
+                          <SelectItem key={pais.value} value={pais.value}>
+                            {pais.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="telefono"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        Teléfono
+                      </FormLabel>
+                      <span className="text-[11px] italic text-muted-foreground/70">Opcional</span>
+                    </div>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        placeholder={placeholderTelefono}
+                        autoComplete="tel"
+                        className="h-12 rounded-xl"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
