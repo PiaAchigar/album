@@ -236,12 +236,9 @@ export default function RegistroPage({ params }: Props) {
                 name="telefono"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                        Teléfono
-                      </FormLabel>
-                      <span className="text-[11px] italic text-muted-foreground/70">Opcional</span>
-                    </div>
+                    <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      Teléfono
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="tel"
