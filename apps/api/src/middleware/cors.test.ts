@@ -55,6 +55,25 @@ describe('corsMiddleware', () => {
     )
   })
 
+  it('allows any origin from a comma-separated API_CORS_ORIGIN list', async () => {
+    vi.stubEnv('API_CORS_ORIGIN', 'https://album.com.ar,https://www.album.com.ar')
+    const app = buildApp()
+
+    const resApex = await app.request('/ping', {
+      headers: { Origin: 'https://album.com.ar' },
+    })
+    const resWww = await app.request('/ping', {
+      headers: { Origin: 'https://www.album.com.ar' },
+    })
+
+    expect(resApex.headers.get('Access-Control-Allow-Origin')).toBe(
+      'https://album.com.ar',
+    )
+    expect(resWww.headers.get('Access-Control-Allow-Origin')).toBe(
+      'https://www.album.com.ar',
+    )
+  })
+
   it('allows all origins when API_CORS_ORIGIN is "*"', async () => {
     vi.stubEnv('API_CORS_ORIGIN', '*')
     const app = buildApp()
