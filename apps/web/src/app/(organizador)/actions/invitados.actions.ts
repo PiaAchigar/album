@@ -1,15 +1,21 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { eventos, invitados } from '@album/database'
+import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { deleteR2Object } from '@/lib/r2'
 import { and, asc, eq, ilike, or } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
 
 export async function obtenerContadoresInvitado(
   invitadoId: string
-): Promise<{ fotos_subidas: number; videos_subidos: number } | null> {
+): Promise<{ nombre: string; fotos_subidas: number; videos_subidos: number } | null> {
   const [row] = await db
-    .select({ fotos_subidas: invitados.fotos_subidas, videos_subidos: invitados.videos_subidos })
+    .select({
+      nombre: invitados.nombre,
+      fotos_subidas: invitados.fotos_subidas,
+      videos_subidos: invitados.videos_subidos,
+    })
     .from(invitados)
     .where(eq(invitados.id, invitadoId))
     .limit(1)
@@ -80,4 +86,41 @@ export async function listarInvitados(
     .orderBy(asc(invitados.created_at))
 
   return rows
+}
+
+export async function eliminarInvitado(
+  invitadoId: string,
+): Promise<{ success: true } | { error: string }> {
+  try {
+    const [invitado] = await db
+      .select({ id: invitados.id, evento_id: invitados.evento_id })
+      .from(invitados)
+      .where(eq(invitados.id, invitadoId))
+      .limit(1)
+
+    if (!invitado) throw new Error('Invitado no encontrado')
+
+    await assertEventoOwnership(invitado.evento_id)
+
+    const archivosDelInvitado = await db
+      .select({ r2_key: archivos.r2_key })
+      .from(archivos)
+      .where(eq(archivos.invitado_id, invitadoId))
+
+    // Orden crítico: R2 primero para cada archivo. Si alguno falla, no se
+    // toca la DB — mismo criterio que eliminarArchivo en archivos.actions.ts.
+    for (const archivo of archivosDelInvitado) {
+      await deleteR2Object(archivo.r2_key)
+    }
+
+    await db.delete(archivos).where(eq(archivos.invitado_id, invitadoId))
+    await db.delete(invitados).where(eq(invitados.id, invitadoId))
+
+    revalidatePath(`/eventos/${invitado.evento_id}/invitados`)
+    revalidatePath(`/eventos/${invitado.evento_id}/galeria`)
+    return { success: true }
+  } catch (err) {
+    console.error('[eliminarInvitado]', err)
+    return { error: 'No se pudo eliminar el invitado' }
+  }
 }

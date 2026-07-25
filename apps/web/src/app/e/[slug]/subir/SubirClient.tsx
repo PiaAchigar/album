@@ -119,6 +119,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
 
   const [counters, setCountersState] = useState<Counters | null>(null)
   const countersRef = useRef<Counters>({ fotos: 0, videos: 0 })
+  const [nombre, setNombre] = useState<string | null>(null)
 
   const [items, setItems] = useState<UploadItem[]>([])
   const itemsRef = useRef<UploadItem[]>([])
@@ -150,7 +151,9 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
           : { fotos: 0, videos: 0 }
         countersRef.current = next
         setCountersState(next)
-        if (!row) {
+        if (row) {
+          setNombre(row.nombre.split(' ')[0])
+        } else {
           toast.error('No pudimos cargar tus contadores. Los límites podrían no reflejarse bien.')
         }
       })
@@ -390,6 +393,11 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
 
       <main className="mx-auto w-full max-w-md flex-1 px-4 pb-12 pt-16">
         {/* Counters */}
+        {nombre && (
+          <h2 className="mb-4 font-[family-name:var(--font-playfair)] text-xl font-bold text-foreground">
+            Hola {nombre}
+          </h2>
+        )}
         <section className="mt-6 space-y-3">
           <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="mb-2 flex items-center justify-between">

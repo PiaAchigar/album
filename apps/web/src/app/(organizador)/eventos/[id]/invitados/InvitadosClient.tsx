@@ -2,9 +2,24 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
-import { SearchIcon, UsersIcon } from 'lucide-react'
-import type { InvitadoConConteos } from '@/app/(organizador)/actions/invitados.actions'
+import { Button } from '@/components/ui/button'
+import { SearchIcon, Trash2, UsersIcon } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  eliminarInvitado,
+  type InvitadoConConteos,
+} from '@/app/(organizador)/actions/invitados.actions'
 
 interface Props {
   invitados: InvitadoConConteos[]
@@ -29,9 +44,28 @@ export function InvitadosClient({ invitados, limiteFotos, limiteVideos, search }
   const [term, setTerm] = useState(search)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
+  const [deleteTarget, setDeleteTarget] = useState<InvitadoConConteos | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current)
   }, [])
+
+  async function handleEliminarConfirmado() {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
+    const result = await eliminarInvitado(deleteTarget.id)
+    setIsDeleting(false)
+    setDeleteTarget(null)
+
+    if ('error' in result) {
+      toast.error(result.error)
+      return
+    }
+
+    router.refresh()
+  }
 
   function handleChange(value: string) {
     setTerm(value)
@@ -106,10 +140,49 @@ export function InvitadosClient({ invitados, limiteFotos, limiteVideos, search }
                   {invitado.videos_subidos}/{limiteVideos} videos
                 </p>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Eliminar a ${invitado.nombre} ${invitado.apellido}`}
+                onClick={() => setDeleteTarget(invitado)}
+                className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              </Button>
             </div>
           ))}
         </div>
       )}
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar a este invitado?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esto borra a{' '}
+              <span className="font-semibold text-foreground">
+                {deleteTarget?.nombre} {deleteTarget?.apellido}
+              </span>{' '}
+              y todas sus fotos y videos de forma permanente, tanto de la galería como del
+              almacenamiento. No se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault()
+                handleEliminarConfirmado()
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Eliminando…' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

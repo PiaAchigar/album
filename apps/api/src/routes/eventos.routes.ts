@@ -89,7 +89,7 @@ export function createEventosRoutes() {
         return c.json(
           {
             error:
-              "Ese teléfono ya está registrado en este evento. Si ya te registraste, usá 'Entrá con tu teléfono' en la pantalla anterior.",
+              "Ese teléfono ya está registrado en este evento. Si ya te registraste, usá 'Entrá con tu teléfono' abajo.",
           },
           409,
         )
@@ -169,7 +169,7 @@ export function createEventosRoutes() {
         return c.json(
           {
             error:
-              'No encontramos ese teléfono registrado en este evento. ¿Ya te registraste? Probá el formulario de registro.',
+              'No encontramos ese teléfono registrado en este evento. ¿Ya te registraste? Probá registrándote.',
           },
           404,
         )
