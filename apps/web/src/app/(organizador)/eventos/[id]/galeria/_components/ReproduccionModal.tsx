@@ -124,7 +124,7 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
         </button>
       </div>
 
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-4">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4">
         {archivo.tipo === 'video' ? (
           // eslint-disable-next-line jsx-a11y/media-has-caption
           <video
@@ -140,10 +140,10 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
               const v = e.currentTarget
               if (v.duration) setProgress((v.currentTime / v.duration) * 100)
             }}
-            className="max-h-[85vh] max-w-full rounded-lg object-contain shadow-2xl"
+            className="h-full max-h-full w-full max-w-full rounded-lg object-contain shadow-2xl"
           />
         ) : (
-          <div className="relative h-[85vh] w-full">
+          <div className="relative h-full w-full">
             <Image
               key={archivo.id}
               src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
@@ -157,7 +157,7 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
         )}
       </div>
 
-      <div className="flex flex-col items-center gap-4 bg-gradient-to-t from-black/80 to-transparent px-4 pb-10 pt-20">
+      <div className="flex flex-col items-center gap-4 bg-gradient-to-t from-black/80 to-transparent px-4 pb-2 pt-5">
         <div className="text-center">
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-white/60">
             Compartido por
