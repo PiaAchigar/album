@@ -253,9 +253,12 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
         })
         uploadableFile = new File([compressedBlob], file.name, { type: file.type })
       } catch {
-        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'error' } : it)))
-        toast.error('No se pudo comprimir la imagen. Intentá de nuevo.')
-        return
+        // Compression relies on decoding the image into a <canvas>, which
+        // fails for some formats/devices (HEIC on non-Safari browsers,
+        // low-memory phones on large camera photos). The original file
+        // already passed the type/size checks in processFiles, so fall back
+        // to uploading it uncompressed rather than blocking the guest.
+        uploadableFile = file
       }
       setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status: 'uploading' } : it)))
     }
