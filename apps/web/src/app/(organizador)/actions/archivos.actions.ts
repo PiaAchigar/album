@@ -253,3 +253,4 @@ export async function descargarZipAprobados(eventoId: string): Promise<{ keys: s
 
   return { keys: rows.map((r) => r.r2_key) }
 }
+

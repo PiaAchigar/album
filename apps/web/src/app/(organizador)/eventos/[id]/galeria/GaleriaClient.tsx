@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { ImageIcon, Play, Trash2 } from 'lucide-react'
+import { Download, ImageIcon, Play, Trash2 } from 'lucide-react'
 import {
   eliminarArchivo,
   type ArchivoConInvitado,
@@ -65,6 +65,7 @@ export function GaleriaClient({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const [isDownloading, setIsDownloading] = useState(false)
   const [reproduccionAbierta, setReproduccionAbierta] = useState(false)
 
   function updateFilter(key: keyof Filters, value: string) {
@@ -88,6 +89,37 @@ export function GaleriaClient({
     })
   }
 
+  async function handleDescargar() {
+    setIsDownloading(true)
+    try {
+      const response = await fetch(`/api/eventos/${eventoId}/galeria/descargar-zip`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al descargar galería')
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `galeria-${eventoId}.zip`
+      document.body.appendChild(a)
+      a.click()
+      URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('Descarga iniciada')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error al descargar galería'
+      toast.error(message)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -98,15 +130,28 @@ export function GaleriaClient({
           </p>
         </div>
         {archivosAprobados.length > 0 && (
-          <Button
-            type="button"
-            size="sm"
-            className="gap-2"
-            onClick={() => setReproduccionAbierta(true)}
-          >
-            <Play className="h-4 w-4" aria-hidden="true" />
-            Reproducir
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              disabled={isDownloading}
+              onClick={handleDescargar}
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Descargar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="gap-2"
+              onClick={() => setReproduccionAbierta(true)}
+            >
+              <Play className="h-4 w-4" aria-hidden="true" />
+              Reproducir
+            </Button>
+          </div>
         )}
       </div>
 

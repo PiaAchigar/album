@@ -42,3 +42,9 @@ export async function deleteR2Object(r2Key: string): Promise<void> {
 
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: r2Key }))
 }
+
+export async function getR2PublicUrl(r2Key: string): Promise<string> {
+  const publicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+  if (!publicUrl) throw new Error('NEXT_PUBLIC_R2_PUBLIC_URL is not set')
+  return `${publicUrl}/${r2Key}`
+}
