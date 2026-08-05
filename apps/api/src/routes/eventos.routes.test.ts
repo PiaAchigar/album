@@ -65,25 +65,43 @@ function mockUpdateOk() {
   }))
 }
 
-function validBody(overrides: Record<string, unknown> = {}) {
-  return {
-    nombre: 'Ana',
-    apellido: 'García',
-    telefono: '099 123 456',
-    acepto_terminos: true,
-    ...overrides,
-  }
-}
-
 // registroRateLimitMiddleware is a real, unmocked module-level singleton
-// with its own internal Map keyed by IP — it is never reset between tests.
-// Each test below is given a distinct x-forwarded-for IP so its requests
-// land in their own bucket and can never collide with another test's count,
-// regardless of test order, additions, removals, or concurrent execution.
+// with its own internal Map, now keyed by the (normalized) telefono in the
+// request body rather than IP — it is never reset between tests. Every test
+// below gets a distinct telefono by default so its requests land in their
+// own bucket and can never collide with another test's count, regardless of
+// test order, additions, removals, or concurrent execution. Tests that
+// specifically need a *shared* telefono (duplicate detection, reingreso
+// matching, the rate-limit tests themselves) grab one explicit unique base
+// via nextTestTelefono() and reuse it deliberately within that one test.
 let ipCounter = 0
 function nextTestIp() {
   ipCounter += 1
   return `10.0.0.${ipCounter}`
+}
+
+let telefonoCounter = 0
+function nextTestTelefono() {
+  telefonoCounter += 1
+  return `099${String(telefonoCounter).padStart(6, '0')}`
+}
+
+function dashed(telefono: string) {
+  return `${telefono.slice(0, 3)}-${telefono.slice(3, 6)}-${telefono.slice(6)}`
+}
+
+function spaced(telefono: string) {
+  return `${telefono.slice(0, 3)} ${telefono.slice(3, 6)} ${telefono.slice(6)}`
+}
+
+function validBody(overrides: Record<string, unknown> = {}) {
+  return {
+    nombre: 'Ana',
+    apellido: 'García',
+    telefono: nextTestTelefono(),
+    acepto_terminos: true,
+    ...overrides,
+  }
 }
 
 function postInvitado(slug: string, body: unknown, ip = nextTestIp()) {
@@ -227,10 +245,11 @@ describe('POST /eventos/:slug/invitados', () => {
     expect(capturedValues?.telefono).toBe('+54 9 11 1234-5678')
   })
 
-  it('is rate limited via registroRateLimitMiddleware after repeated requests from the same IP', async () => {
+  it('is rate limited via registroRateLimitMiddleware after repeated requests with the same telefono', async () => {
     queueSelects(...Array.from({ length: 11 }, () => [[mockEvento], [{ value: 0 }], []]).flat())
     mockInsertReturning('inv-new')
 
+    const telefono = nextTestTelefono()
     const router = createEventosRoutes()
     let lastStatus = 0
     for (let i = 0; i < 11; i++) {
@@ -240,7 +259,7 @@ describe('POST /eventos/:slug/invitados', () => {
           'Content-Type': 'application/json',
           'x-forwarded-for': '9.9.9.9',
         },
-        body: JSON.stringify(validBody()),
+        body: JSON.stringify(validBody({ telefono })),
       })
       lastStatus = res.status
     }
@@ -249,23 +268,24 @@ describe('POST /eventos/:slug/invitados', () => {
   })
 
   it('returns 409 when telefono already exists in the same evento (normalized match)', async () => {
+    const telefono = nextTestTelefono()
     // select order: evento, cupo count, invitados-por-telefono lookup
     queueSelects(
       [mockEvento],
       [{ value: 0 }],
-      [{ id: 'inv-existente', telefono: '099-123-456' }],
+      [{ id: 'inv-existente', telefono: dashed(telefono) }],
     )
 
     const res = await postInvitado(
       'boda-test-abc123',
-      validBody({ telefono: '099 123 456' }),
+      validBody({ telefono: spaced(telefono) }),
     )
     const body = await res.json()
 
     expect(res.status).toBe(409)
     expect(body).toEqual({
       error:
-        "Ese teléfono ya está registrado en este evento. Si ya te registraste, usá 'Entrá con tu teléfono' en la pantalla anterior.",
+        "Ese teléfono ya está registrado en este evento. Si ya te registraste, usá 'Entrá con tu teléfono' abajo.",
     })
     expect(insertMock).not.toHaveBeenCalled()
   })
@@ -273,7 +293,7 @@ describe('POST /eventos/:slug/invitados', () => {
   it('allows the same telefono to register in a different evento', async () => {
     queueSelects([mockEvento], [{ value: 0 }], [])
 
-    const res = await postInvitado('boda-test-abc123', validBody({ telefono: '099 123 456' }))
+    const res = await postInvitado('boda-test-abc123', validBody())
 
     expect(res.status).toBe(201)
   })
@@ -298,12 +318,13 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
   })
 
   it('returns 200 with a fresh token when telefono matches an existing invitado', async () => {
+    const telefono = nextTestTelefono()
     queueSelects(
       [mockEvento],
-      [{ id: 'inv-existente', evento_id: 'evt-1', telefono: '099-123-456' }],
+      [{ id: 'inv-existente', evento_id: 'evt-1', telefono: dashed(telefono) }],
     )
 
-    const res = await postReingreso('boda-test-abc123', { telefono: '099 123 456' })
+    const res = await postReingreso('boda-test-abc123', { telefono: spaced(telefono) })
     const body = (await res.json()) as { token: string; invitado_id: string }
 
     expect(res.status).toBe(200)
@@ -313,12 +334,13 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
   })
 
   it('matches regardless of phone formatting differences', async () => {
+    const telefono = nextTestTelefono()
     queueSelects(
       [mockEvento],
-      [{ id: 'inv-existente', evento_id: 'evt-1', telefono: '(099) 123-456' }],
+      [{ id: 'inv-existente', evento_id: 'evt-1', telefono: `(${telefono.slice(0, 3)}) ${telefono.slice(3, 6)}-${telefono.slice(6)}` }],
     )
 
-    const res = await postReingreso('boda-test-abc123', { telefono: '0991 23456' })
+    const res = await postReingreso('boda-test-abc123', { telefono: `${telefono.slice(0, 4)} ${telefono.slice(4)}` })
 
     expect(res.status).toBe(200)
   })
@@ -326,19 +348,19 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
   it('returns 404 when no invitado in this evento has that telefono', async () => {
     queueSelects([mockEvento], [{ id: 'otro', evento_id: 'evt-1', telefono: '000-000-000' }])
 
-    const res = await postReingreso('boda-test-abc123', { telefono: '099 123 456' })
+    const res = await postReingreso('boda-test-abc123', { telefono: nextTestTelefono() })
     const body = await res.json()
 
     expect(res.status).toBe(404)
     expect(body).toEqual({
-      error: 'No encontramos ese teléfono registrado en este evento. ¿Ya te registraste? Probá el formulario de registro.',
+      error: 'No encontramos ese teléfono registrado en este evento. ¿Ya te registraste? Probá registrándote.',
     })
   })
 
   it('returns 404 when evento does not exist for the slug', async () => {
     queueSelects([])
 
-    const res = await postReingreso('no-existe', { telefono: '099 123 456' })
+    const res = await postReingreso('no-existe', { telefono: nextTestTelefono() })
 
     expect(res.status).toBe(404)
   })
@@ -346,7 +368,7 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
   it('returns 404 when evento exists but is not active (borrador)', async () => {
     queueSelects([{ ...mockEvento, estado: 'borrador' }])
 
-    const res = await postReingreso('boda-test-abc123', { telefono: '099 123 456' })
+    const res = await postReingreso('boda-test-abc123', { telefono: nextTestTelefono() })
     const body = await res.json()
 
     expect(res.status).toBe(404)
@@ -359,16 +381,17 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
     expect(res.status).toBe(400)
   })
 
-  it('is rate limited via registroRateLimitMiddleware after repeated requests from the same IP', async () => {
+  it('is rate limited via registroRateLimitMiddleware after repeated requests with the same telefono', async () => {
     queueSelects(...Array.from({ length: 11 }, () => [[mockEvento], []]).flat())
 
+    const telefono = nextTestTelefono()
     const router = createEventosRoutes()
     let lastStatus = 0
     for (let i = 0; i < 11; i++) {
       const res = await router.request('/eventos/boda-test-abc123/invitados/reingresar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '9.9.9.8' },
-        body: JSON.stringify({ telefono: '099 123 456' }),
+        body: JSON.stringify({ telefono }),
       })
       lastStatus = res.status
     }

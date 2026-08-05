@@ -19,8 +19,8 @@ export function createArchivosRoutes() {
 
   app.post(
     '/eventos/:slug/archivos/solicitar-subida',
-    uploadRateLimitMiddleware,
     jwtInvitadoMiddleware,
+    uploadRateLimitMiddleware,
     zValidator(
       'json',
       z.object({
@@ -104,8 +104,8 @@ export function createArchivosRoutes() {
 
   app.post(
     '/eventos/:slug/archivos/confirmar',
-    uploadRateLimitMiddleware,
     jwtInvitadoMiddleware,
+    uploadRateLimitMiddleware,
     zValidator(
       'json',
       z.object({
@@ -203,8 +203,8 @@ export function createArchivosRoutes() {
 
   app.delete(
     '/eventos/:slug/archivos/:archivoId',
-    uploadRateLimitMiddleware,
     jwtInvitadoMiddleware,
+    uploadRateLimitMiddleware,
     async (c) => {
       const { slug, archivoId } = c.req.param()
       const { invitado_id, evento_id } = c.get('invitado')

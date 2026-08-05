@@ -1,27 +1,54 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Hono } from 'hono'
+import type { InvitadoJWTPayload } from '../lib/jwt.js'
 import {
   registroRateLimitMiddleware,
   uploadRateLimitMiddleware,
 } from './rate-limit.js'
 
-function buildApp() {
+type Env = { Variables: { invitado: InvitadoJWTPayload } }
+
+function buildRegistroApp() {
   const app = new Hono()
-  app.post('/registro', registroRateLimitMiddleware, (c) =>
-    c.json({ ok: true }),
-  )
-  app.post('/upload', uploadRateLimitMiddleware, (c) => c.json({ ok: true }))
+  app.post('/registro', registroRateLimitMiddleware, (c) => c.json({ ok: true }))
   return app
 }
 
-async function requestFrom(
+// Simulates jwtInvitadoMiddleware (which normally runs before
+// uploadRateLimitMiddleware in the real route chain) by setting `invitado`
+// on the context from a test-only header, so these tests don't need real
+// JWTs to exercise the invitado_id-keyed limiter.
+function buildUploadApp() {
+  const app = new Hono<Env>()
+  app.post(
+    '/upload',
+    async (c, next) => {
+      const invitado_id = c.req.header('x-test-invitado-id') ?? 'unknown'
+      c.set('invitado', { invitado_id, evento_id: 'evento-1' } as InvitadoJWTPayload)
+      return next()
+    },
+    uploadRateLimitMiddleware,
+    (c) => c.json({ ok: true }),
+  )
+  return app
+}
+
+async function registro(
   app: Hono,
-  path: string,
-  ip: string,
+  telefono: string | undefined,
+  ip = '1.1.1.1',
 ): Promise<Response> {
-  return app.request(path, {
+  return app.request('/registro', {
     method: 'POST',
-    headers: { 'x-forwarded-for': ip },
+    headers: { 'x-forwarded-for': ip, 'Content-Type': 'application/json' },
+    body: telefono === undefined ? undefined : JSON.stringify({ telefono }),
+  })
+}
+
+async function upload(app: Hono<Env>, invitadoId: string, ip = '1.1.1.1'): Promise<Response> {
+  return app.request('/upload', {
+    method: 'POST',
+    headers: { 'x-forwarded-for': ip, 'x-test-invitado-id': invitadoId },
   })
 }
 
@@ -33,25 +60,23 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('registroRateLimitMiddleware (10 req/min per IP)', () => {
-  it('allows up to 10 requests from the same IP within the window', async () => {
-    const app = buildApp()
-    const ip = '1.1.1.1'
+describe('registroRateLimitMiddleware (10 req/min per teléfono)', () => {
+  it('allows up to 10 requests for the same teléfono within the window', async () => {
+    const app = buildRegistroApp()
 
     for (let i = 0; i < 10; i++) {
-      const res = await requestFrom(app, '/registro', ip)
+      const res = await registro(app, '099123456')
       expect(res.status).toBe(200)
     }
   })
 
-  it('rejects the 11th request from the same IP within the window with 429', async () => {
-    const app = buildApp()
-    const ip = '2.2.2.2'
+  it('rejects the 11th request for the same teléfono within the window with 429', async () => {
+    const app = buildRegistroApp()
 
     for (let i = 0; i < 10; i++) {
-      await requestFrom(app, '/registro', ip)
+      await registro(app, '099234567')
     }
-    const res = await requestFrom(app, '/registro', ip)
+    const res = await registro(app, '099234567')
     const body = await res.json()
 
     expect(res.status).toBe(429)
@@ -60,57 +85,94 @@ describe('registroRateLimitMiddleware (10 req/min per IP)', () => {
     })
   })
 
-  it('tracks separate IPs independently', async () => {
-    const app = buildApp()
+  it('tracks separate teléfonos independently even from the same IP', async () => {
+    // The whole point of keying by teléfono instead of IP: dozens of guests
+    // on the same venue WiFi share one public IP, so they must not share one
+    // rate-limit budget.
+    const app = buildRegistroApp()
+    const sharedIp = '10.0.0.1'
 
     for (let i = 0; i < 10; i++) {
-      await requestFrom(app, '/registro', '3.3.3.3')
+      await registro(app, '099345678', sharedIp)
     }
-    // A different IP should not be affected by 3.3.3.3's usage
-    const res = await requestFrom(app, '/registro', '4.4.4.4')
+    // A different phone, same IP, should not be affected by 099345678's usage
+    const res = await registro(app, '099999999', sharedIp)
 
     expect(res.status).toBe(200)
   })
 
   it('resets the count after the window elapses', async () => {
-    const app = buildApp()
-    const ip = '5.5.5.5'
+    const app = buildRegistroApp()
 
     for (let i = 0; i < 10; i++) {
-      await requestFrom(app, '/registro', ip)
+      await registro(app, '099456789')
     }
-    let res = await requestFrom(app, '/registro', ip)
+    let res = await registro(app, '099456789')
     expect(res.status).toBe(429)
 
     // Advance past the 60s window
     vi.advanceTimersByTime(60_001)
 
-    res = await requestFrom(app, '/registro', ip)
+    res = await registro(app, '099456789')
     expect(res.status).toBe(200)
+  })
+
+  it('normalizes teléfono formatting before keying (spaces/dashes vs digits-only match)', async () => {
+    const app = buildRegistroApp()
+
+    for (let i = 0; i < 10; i++) {
+      await registro(app, '099 567-890')
+    }
+    const res = await registro(app, '0995 67890')
+
+    expect(res.status).toBe(429)
+  })
+
+  it('falls back to IP-based limiting when the request has no valid teléfono', async () => {
+    const app = buildRegistroApp()
+    const ip = '20.20.20.20'
+
+    for (let i = 0; i < 10; i++) {
+      await registro(app, undefined, ip)
+    }
+    const res = await registro(app, undefined, ip)
+
+    expect(res.status).toBe(429)
   })
 })
 
-describe('uploadRateLimitMiddleware (30 req/min per IP)', () => {
-  it('allows up to 30 requests from the same IP within the window', async () => {
-    const app = buildApp()
-    const ip = '6.6.6.6'
+describe('uploadRateLimitMiddleware (30 req/min per invitado_id)', () => {
+  it('allows up to 30 requests for the same invitado_id within the window', async () => {
+    const app = buildUploadApp()
 
     for (let i = 0; i < 30; i++) {
-      const res = await requestFrom(app, '/upload', ip)
+      const res = await upload(app, 'invitado-a')
       expect(res.status).toBe(200)
     }
   })
 
-  it('rejects the 31st request from the same IP within the window with 429', async () => {
-    const app = buildApp()
-    const ip = '7.7.7.7'
+  it('rejects the 31st request for the same invitado_id within the window with 429', async () => {
+    const app = buildUploadApp()
 
     for (let i = 0; i < 30; i++) {
-      await requestFrom(app, '/upload', ip)
+      await upload(app, 'invitado-b')
     }
-    const res = await requestFrom(app, '/upload', ip)
+    const res = await upload(app, 'invitado-b')
 
     expect(res.status).toBe(429)
+  })
+
+  it('tracks separate invitado_id independently even from the same IP', async () => {
+    const app = buildUploadApp()
+    const sharedIp = '10.0.0.1'
+
+    for (let i = 0; i < 30; i++) {
+      await upload(app, 'invitado-c', sharedIp)
+    }
+    // A different guest, same venue WiFi/IP, should not be affected
+    const res = await upload(app, 'invitado-d', sharedIp)
+
+    expect(res.status).toBe(200)
   })
 })
 
@@ -140,7 +202,7 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
     vi.resetModules()
   })
 
-  it('calls Ratelimit.limit() instead of the in-memory path when env vars are configured', async () => {
+  it('calls Ratelimit.limit() with the normalized teléfono instead of IP, for registro', async () => {
     process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
     process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
 
@@ -160,7 +222,8 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
 
     const res = await app.request('/registro', {
       method: 'POST',
-      headers: { 'x-forwarded-for': '9.9.9.9' },
+      headers: { 'x-forwarded-for': '9.9.9.9', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefono: '099 111-222' }),
     })
 
     expect(res.status).toBe(200)
@@ -169,40 +232,10 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
       token: 'fake-token',
     })
     expect(slidingWindowMock).toHaveBeenCalledWith(10, '60 s')
-    expect(limitMock).toHaveBeenCalledWith('9.9.9.9')
+    expect(limitMock).toHaveBeenCalledWith('099111222')
   })
 
-  it('returns the same 429 response shape as the in-memory path when the Upstash limiter reports failure', async () => {
-    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
-    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
-
-    const limitMock = vi.fn().mockResolvedValue({ success: false })
-    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
-    RatelimitMock.slidingWindow = vi.fn().mockReturnValue('sliding-window-config')
-    const RedisMock = vi.fn().mockImplementation(() => ({}))
-
-    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
-    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
-    vi.resetModules()
-
-    const { uploadRateLimitMiddleware } = await import('./rate-limit.js')
-    const app = new Hono()
-    app.post('/upload', uploadRateLimitMiddleware, (c) => c.json({ ok: true }))
-
-    const res = await app.request('/upload', {
-      method: 'POST',
-      headers: { 'x-forwarded-for': '10.10.10.10' },
-    })
-    const body = await res.json()
-
-    expect(res.status).toBe(429)
-    expect(body).toEqual({
-      error: 'Demasiadas solicitudes. Esperá un momento e intentá de nuevo.',
-    })
-    expect(limitMock).toHaveBeenCalledWith('10.10.10.10')
-  })
-
-  it('respects the cf-connecting-ip > x-forwarded-for > x-real-ip precedence in the Upstash path too', async () => {
+  it('falls back to IP precedence (cf-connecting-ip > x-forwarded-for > x-real-ip) when there is no teléfono', async () => {
     process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
     process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
 
@@ -231,6 +264,41 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
     expect(limitMock).toHaveBeenCalledWith('11.11.11.11')
   })
 
+  it('returns the same 429 response shape as the in-memory path when the Upstash limiter reports failure, for upload', async () => {
+    process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
+
+    const limitMock = vi.fn().mockResolvedValue({ success: false })
+    const RatelimitMock = vi.fn().mockImplementation(() => ({ limit: limitMock })) as any
+    RatelimitMock.slidingWindow = vi.fn().mockReturnValue('sliding-window-config')
+    const RedisMock = vi.fn().mockImplementation(() => ({}))
+
+    vi.doMock('@upstash/ratelimit', () => ({ Ratelimit: RatelimitMock }))
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }))
+    vi.resetModules()
+
+    const { uploadRateLimitMiddleware } = await import('./rate-limit.js')
+    const app = new Hono<Env>()
+    app.post(
+      '/upload',
+      async (c, next) => {
+        c.set('invitado', { invitado_id: 'invitado-e', evento_id: 'evento-1' } as InvitadoJWTPayload)
+        return next()
+      },
+      uploadRateLimitMiddleware,
+      (c) => c.json({ ok: true }),
+    )
+
+    const res = await app.request('/upload', { method: 'POST' })
+    const body = await res.json()
+
+    expect(res.status).toBe(429)
+    expect(body).toEqual({
+      error: 'Demasiadas solicitudes. Esperá un momento e intentá de nuevo.',
+    })
+    expect(limitMock).toHaveBeenCalledWith('invitado-e')
+  })
+
   it('fails open (calls next(), no 429) when the Upstash limiter throws for the registro middleware', async () => {
     process.env.UPSTASH_REDIS_REST_URL = 'https://fake-upstash.example.com'
     process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token'
@@ -250,12 +318,13 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
 
     const res = await app.request('/registro', {
       method: 'POST',
-      headers: { 'x-forwarded-for': '44.44.44.44' },
+      headers: { 'x-forwarded-for': '44.44.44.44', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefono: '044444444' }),
     })
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ ok: true })
-    expect(limitMock).toHaveBeenCalledWith('44.44.44.44')
+    expect(limitMock).toHaveBeenCalledWith('044444444')
   })
 
   it('fails open (calls next(), no 429) when the Upstash limiter throws for the upload middleware', async () => {
@@ -272,16 +341,21 @@ describe('Upstash-backed rate limiting (when UPSTASH_REDIS_REST_URL/TOKEN are se
     vi.resetModules()
 
     const { uploadRateLimitMiddleware } = await import('./rate-limit.js')
-    const app = new Hono()
-    app.post('/upload', uploadRateLimitMiddleware, (c) => c.json({ ok: true }))
+    const app = new Hono<Env>()
+    app.post(
+      '/upload',
+      async (c, next) => {
+        c.set('invitado', { invitado_id: 'invitado-f', evento_id: 'evento-1' } as InvitadoJWTPayload)
+        return next()
+      },
+      uploadRateLimitMiddleware,
+      (c) => c.json({ ok: true }),
+    )
 
-    const res = await app.request('/upload', {
-      method: 'POST',
-      headers: { 'x-forwarded-for': '55.55.55.55' },
-    })
+    const res = await app.request('/upload', { method: 'POST' })
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ ok: true })
-    expect(limitMock).toHaveBeenCalledWith('55.55.55.55')
+    expect(limitMock).toHaveBeenCalledWith('invitado-f')
   })
 })
