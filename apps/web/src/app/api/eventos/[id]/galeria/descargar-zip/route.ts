@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { and, eq } from 'drizzle-orm'
-import { getR2PublicUrl } from '@/lib/r2'
+import { organizadorApi } from '@/lib/organizador-api-client'
 
 export async function POST(
   request: NextRequest,
@@ -34,6 +34,7 @@ export async function POST(
     // Get all approved files
     const rows = await db
       .select({
+        id: archivos.id,
         r2_key: archivos.r2_key,
         tipo: archivos.tipo,
         created_at: archivos.created_at,
@@ -52,12 +53,19 @@ export async function POST(
       )
     }
 
+    const { urls } = await organizadorApi.urlsLectura(rows.map((r) => r.id))
+
     const zip = new JSZip()
 
     // Download each file and add to ZIP
     for (const row of rows) {
       try {
-        const url = await getR2PublicUrl(row.r2_key)
+        const url = urls[row.id]
+        if (!url) {
+          console.warn(`Sin URL firmada para ${row.r2_key}`)
+          continue
+        }
+
         const response = await fetch(url)
 
         if (!response.ok) {
