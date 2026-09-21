@@ -35,6 +35,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.4.2
         version: 0.4.3(hono@4.12.31)(zod@3.25.76)
+      '@supabase/supabase-js':
+        specifier: ^2.49.1
+        version: 2.110.7
       '@upstash/ratelimit':
         specifier: ^2.0.8
         version: 2.0.8(@upstash/redis@1.38.0)
