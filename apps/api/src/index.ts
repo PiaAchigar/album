@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { logger as honoRequestLogger } from 'hono/logger'
 import { db } from './db/index.js'
 import { sql } from 'drizzle-orm'
 import { corsMiddleware } from './middleware/cors.js'
@@ -13,6 +14,12 @@ const app = new Hono()
 
 // CORS — allow requests from Next.js frontend
 app.use('*', corsMiddleware)
+
+// Loguea cada request entrante en tiempo real (método, path, status, ms) —
+// sin esto, solo se veían los logger.info/warn explícitos de cada ruta,
+// nada para requests que no loguean nada por su cuenta (ej. un 404 en una
+// ruta que no existe, o un request que nunca llega a ejecutar el handler).
+app.use('*', honoRequestLogger((message, ...rest) => logger.debug([message, ...rest].join(' '))))
 
 // Health check — verifies DB connectivity with a 3-second timeout
 app.get('/health', async (c) => {
