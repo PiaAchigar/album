@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { generateSlug } from '@/lib/slug'
-import { deleteR2Object } from '@/lib/r2'
+import { organizadorApi } from '@/lib/organizador-api-client'
 import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
@@ -169,22 +169,14 @@ export async function eliminarEvento(
     const organizadorId = await getOrganizadorId()
 
     const [evento] = await db
-      .select({ foto_portada_url: eventos.foto_portada_url })
+      .select({ id: eventos.id })
       .from(eventos)
       .where(and(eq(eventos.id, eventoId), eq(eventos.organizador_id, organizadorId)))
 
     if (!evento) return { error: 'Evento no encontrado' }
 
-    const archivosDelEvento = await db
-      .select({ r2_key: archivos.r2_key })
-      .from(archivos)
-      .where(eq(archivos.evento_id, eventoId))
-
-    const keysABorrar = archivosDelEvento.map((a) => a.r2_key)
-    if (evento.foto_portada_url) keysABorrar.push(evento.foto_portada_url)
-
-    // Orden crítico: R2 primero. Si falla algún borrado, no se toca la DB.
-    await Promise.all(keysABorrar.map((key) => deleteR2Object(key)))
+    // Orden crítico: R2 primero. Si falla, no se toca la DB.
+    await organizadorApi.eliminarEventoArchivosR2(eventoId)
 
     // Orden por FKs: archivos -> invitados -> eventos.
     await db.delete(archivos).where(eq(archivos.evento_id, eventoId))
