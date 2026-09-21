@@ -9,7 +9,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 // dead code and would silently fail to protect a route. Every new
 // organizer-only page added under `src/app/(organizador)/` must have its
 // path prefix added here explicitly.
-const PROTECTED_PREFIXES = ['/eventos']
+const PROTECTED_PREFIXES = ['/eventos', '/configuracion']
+
+// Rutas que además exigen tener el storage de R2 configurado. No incluye
+// /configuracion — si la incluyera, un organizador sin config nunca podría
+// llegar a la pantalla que le permite configurarlo (loop de redirección).
+const REQUIERE_STORAGE_PREFIXES = ['/eventos']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -53,6 +58,23 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
+  }
+
+  // Gate: sin storage de R2 propio configurado y verificado, no se puede
+  // entrar al panel de eventos — se redirige a configurarlo primero.
+  if (user && REQUIERE_STORAGE_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    const { data: storageConfig } = await supabase
+      .from('organizador_storage_config')
+      .select('id')
+      .eq('organizador_id', user.id)
+      .not('verificado_at', 'is', null)
+      .maybeSingle()
+
+    if (!storageConfig) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/configuracion/storage'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
