@@ -20,13 +20,20 @@ vi.mock('dotenv/config', () => ({}))
 
 // --- r2 mock ---
 const getInvitadoPresignedUploadMock = vi.fn()
+const deleteR2ObjectMock = vi.fn()
+const getS3ClientForEventoMock = vi.fn()
+const getPresignedReadUrlMock = vi.fn()
 vi.mock('../lib/r2.js', () => ({
-  getInvitadoPresignedUpload: (...args: unknown[]) =>
-    getInvitadoPresignedUploadMock(...args),
+  getInvitadoPresignedUpload: (...args: unknown[]) => getInvitadoPresignedUploadMock(...args),
+  deleteR2Object: (...args: unknown[]) => deleteR2ObjectMock(...args),
+  getS3ClientForEvento: (...args: unknown[]) => getS3ClientForEventoMock(...args),
+  getPresignedReadUrl: (...args: unknown[]) => getPresignedReadUrlMock(...args),
+  StorageNoConfiguradoError: class StorageNoConfiguradoError extends Error {},
 }))
 
 const { createArchivosRoutes } = await import('./archivos.routes.js')
 const { signInvitadoToken } = await import('../lib/jwt.js')
+const { StorageNoConfiguradoError } = await import('../lib/r2.js')
 
 const mockEvento = {
   id: 'evt-1',
@@ -64,6 +71,7 @@ function queueSelects(...results: unknown[][]) {
     from: () => ({
       where: () => ({
         limit: async () => selectQueue.shift() ?? [],
+        orderBy: async () => selectQueue.shift() ?? [],
       }),
     }),
   }))
@@ -136,6 +144,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockInsertReturning('arch-1')
   mockUpdateOk()
+  getS3ClientForEventoMock.mockResolvedValue({ client: {}, bucket: 'test-bucket' })
   getInvitadoPresignedUploadMock.mockResolvedValue({
     uploadUrl: 'https://r2.example.com/presigned-put-url',
     r2Key: 'eventos/evt-1/inv-1/generated-name.jpg',
@@ -160,7 +169,12 @@ describe('POST /eventos/:slug/archivos/solicitar-subida', () => {
     expect(res.status).toBe(200)
     expect(body.upload_url).toBe('https://r2.example.com/presigned-put-url')
     expect(body.r2_key).toBe('eventos/evt-1/inv-1/generated-name.jpg')
-    expect(getInvitadoPresignedUploadMock).toHaveBeenCalledWith('evt-1', 'inv-1', 'jpg')
+    expect(getInvitadoPresignedUploadMock).toHaveBeenCalledWith(
+      { client: {}, bucket: 'test-bucket' },
+      'evt-1',
+      'inv-1',
+      'jpg',
+    )
   })
 
   it('returns 403 "Ya usaste tus 3 fotos" when fotos_subidas >= limite_fotos_por_invitado, and never generates a presigned URL', async () => {
@@ -350,5 +364,41 @@ describe('POST /eventos/:slug/archivos/confirmar', () => {
 
     expect(res.status).toBe(404)
     expect(insertMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('GET /eventos/:slug/archivos/mis-archivos', () => {
+  it('incluye una url firmada por archivo', async () => {
+    getPresignedReadUrlMock.mockResolvedValue('https://signed.example/foo.jpg')
+    queueSelects(
+      [mockEvento],
+      [{ id: 'arch-1', tipo: 'foto', r2_key: 'k', estado: 'aprobada', created_at: new Date() }],
+    )
+
+    const router = createArchivosRoutes()
+    const res = await router.request(`/eventos/${mockEvento.slug}/archivos/mis-archivos`, {
+      headers: { Authorization: await authHeader() },
+    })
+    const body = (await res.json()) as { archivos: Array<{ url: string }> }
+
+    expect(res.status).toBe(200)
+    expect(body.archivos[0].url).toBe('https://signed.example/foo.jpg')
+  })
+
+  it('devuelve url: null por archivo si el organizador no configuró su storage', async () => {
+    getS3ClientForEventoMock.mockRejectedValue(new StorageNoConfiguradoError())
+    queueSelects(
+      [mockEvento],
+      [{ id: 'arch-1', tipo: 'foto', r2_key: 'k', estado: 'aprobada', created_at: new Date() }],
+    )
+
+    const router = createArchivosRoutes()
+    const res = await router.request(`/eventos/${mockEvento.slug}/archivos/mis-archivos`, {
+      headers: { Authorization: await authHeader() },
+    })
+    const body = (await res.json()) as { archivos: Array<{ url: string | null }> }
+
+    expect(res.status).toBe(200)
+    expect(body.archivos[0].url).toBeNull()
   })
 })

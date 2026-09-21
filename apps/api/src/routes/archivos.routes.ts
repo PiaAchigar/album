@@ -4,7 +4,13 @@ import { z } from 'zod'
 import { and, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { eventos, invitados, archivos } from '@album/database'
-import { getInvitadoPresignedUpload, deleteR2Object } from '../lib/r2.js'
+import {
+  getS3ClientForEvento,
+  getInvitadoPresignedUpload,
+  deleteR2Object,
+  getPresignedReadUrl,
+  StorageNoConfiguradoError,
+} from '../lib/r2.js'
 import { uploadRateLimitMiddleware } from '../middleware/rate-limit.js'
 import { jwtInvitadoMiddleware } from '../middleware/jwt-invitado.js'
 import { logger } from '../lib/logger.js'
@@ -92,13 +98,22 @@ export function createArchivosRoutes() {
         }
       }
 
-      const { uploadUrl, r2Key } = await getInvitadoPresignedUpload(
-        evento.id,
-        invitado_id,
-        ext,
-      )
-      logger.info({ invitado_id, tipo, evento_id: evento.id }, 'Presigned URL generada')
-      return c.json({ upload_url: uploadUrl, r2_key: r2Key }, 200)
+      try {
+        const clientInfo = await getS3ClientForEvento(evento.id)
+        const { uploadUrl, r2Key } = await getInvitadoPresignedUpload(
+          clientInfo,
+          evento.id,
+          invitado_id,
+          ext,
+        )
+        logger.info({ invitado_id, tipo, evento_id: evento.id }, 'Presigned URL generada')
+        return c.json({ upload_url: uploadUrl, r2_key: r2Key }, 200)
+      } catch (err) {
+        if (err instanceof StorageNoConfiguradoError) {
+          return c.json({ error: 'El organizador todavía no configuró su almacenamiento' }, 503)
+        }
+        throw err
+      }
     },
   )
 
@@ -197,7 +212,28 @@ export function createArchivosRoutes() {
         .where(and(eq(archivos.evento_id, evento.id), eq(archivos.invitado_id, invitado_id)))
         .orderBy(archivos.created_at)
 
-      return c.json({ archivos: rows }, 200)
+      if (rows.length === 0) {
+        return c.json({ archivos: [] }, 200)
+      }
+
+      let clientInfo
+      try {
+        clientInfo = await getS3ClientForEvento(evento.id)
+      } catch (err) {
+        if (err instanceof StorageNoConfiguradoError) {
+          return c.json({ archivos: rows.map((r) => ({ ...r, url: null })) }, 200)
+        }
+        throw err
+      }
+
+      const archivosConUrl = await Promise.all(
+        rows.map(async (row) => ({
+          ...row,
+          url: await getPresignedReadUrl(clientInfo, row.r2_key),
+        })),
+      )
+
+      return c.json({ archivos: archivosConUrl }, 200)
     },
   )
 
@@ -234,8 +270,9 @@ export function createArchivosRoutes() {
 
       if (!archivo) return c.json({ error: 'Archivo no encontrado' }, 404)
 
+      const clientInfo = await getS3ClientForEvento(evento.id)
       // Orden crítico: R2 primero. Si falla, no se toca la DB ni el contador.
-      await deleteR2Object(archivo.r2_key)
+      await deleteR2Object(clientInfo, archivo.r2_key)
 
       await db.delete(archivos).where(eq(archivos.id, archivoId))
 
