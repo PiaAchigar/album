@@ -1,10 +1,10 @@
 'use server'
 
-import { getOrganizadorPresignedUpload } from '@/lib/r2'
+import { organizadorApi } from '@/lib/organizador-api-client'
 
 export async function solicitarPresignedPortada(
   eventoId: string,
   extension: string,
 ): Promise<{ uploadUrl: string; r2Key: string }> {
-  return getOrganizadorPresignedUpload(eventoId, extension)
+  return organizadorApi.solicitarPresignedPortada(eventoId, extension)
 }
