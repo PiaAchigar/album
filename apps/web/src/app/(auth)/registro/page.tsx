@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Images, Lock, Mail, User, Users } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Images, Lock, Mail, User, Users } from 'lucide-react'
 import {
   Form,
   FormControl,
@@ -34,6 +34,7 @@ export default function RegistroPage() {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<RegistroValues>({
     resolver: zodResolver(registroSchema),
@@ -186,11 +187,23 @@ export default function RegistroPage() {
                             aria-hidden="true"
                           />
                           <Input
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             placeholder="Mínimo 8 caracteres"
-                            className="h-12 pl-12"
+                            className="h-12 pl-12 pr-12"
                             {...field}
                           />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword((v) => !v)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5" aria-hidden="true" />
+                            ) : (
+                              <Eye className="h-5 w-5" aria-hidden="true" />
+                            )}
+                          </button>
                         </div>
                       </FormControl>
                       <FormMessage />
