@@ -61,6 +61,7 @@ export function apiClient(slug: string) {
         r2_key: string
         estado: string
         created_at: string | null
+        url: string | null
       }>
     }> {
       const res = await fetch(`${API_URL}/eventos/${slug}/archivos/mis-archivos`, {

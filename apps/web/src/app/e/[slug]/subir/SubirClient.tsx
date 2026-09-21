@@ -21,7 +21,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 
 interface Props {
   slug: string
@@ -186,7 +185,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
               id: row.id,
               archivoId: row.id,
               tipo: row.tipo,
-              previewUrl: null,
+              previewUrl: row.url,
               r2Key: row.r2_key,
               progress: 100,
               status: 'done',
@@ -493,7 +492,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
                   {item.tipo === 'foto' && (item.previewUrl || item.r2Key) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={item.previewUrl ?? `${R2_PUBLIC_URL}/${item.r2Key}`}
+                      src={item.previewUrl ?? ''}
                       alt=""
                       className="h-full w-full object-cover"
                     />
