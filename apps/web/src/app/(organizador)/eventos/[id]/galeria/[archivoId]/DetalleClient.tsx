@@ -32,8 +32,6 @@ import {
   type ArchivoConInvitado,
 } from '@/app/(organizador)/actions/archivos.actions'
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-
 interface Props {
   eventoId: string
   archivo: ArchivoConInvitado
@@ -133,12 +131,12 @@ export function DetalleClient({ eventoId, archivo, prevId, nextId }: Props) {
         {archivo.tipo === 'video' ? (
           <video
             controls
-            src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
+            src={archivo.url}
             className="mx-auto h-full max-h-full w-auto max-w-full"
           />
         ) : (
           <Image
-            src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
+            src={archivo.url}
             alt={`Foto de ${archivo.invitado_nombre} ${archivo.invitado_apellido}`}
             fill
             className="object-contain"

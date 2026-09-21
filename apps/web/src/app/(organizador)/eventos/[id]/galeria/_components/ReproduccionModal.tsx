@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { ChevronLeft, ChevronRight, Pause, Play, X } from 'lucide-react'
 import type { ArchivoConInvitado } from '@/app/(organizador)/actions/archivos.actions'
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
 const SLIDE_DURATION_MS = 5000
 const VIDEO_SAFETY_TIMEOUT_MS = 15000
 const TICK_MS = 100
@@ -130,7 +129,7 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
           <video
             key={archivo.id}
             ref={videoRef}
-            src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
+            src={archivo.url}
             muted
             autoPlay
             playsInline
@@ -146,7 +145,7 @@ export function ReproduccionModal({ archivos, onClose }: Props) {
           <div className="relative h-full w-full">
             <Image
               key={archivo.id}
-              src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
+              src={archivo.url}
               alt={`Foto de ${archivo.invitado_nombre} ${archivo.invitado_apellido}`}
               fill
               className="rounded-lg object-contain shadow-2xl"

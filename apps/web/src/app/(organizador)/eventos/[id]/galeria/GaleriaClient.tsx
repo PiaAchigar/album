@@ -34,8 +34,6 @@ import type { InvitadoConConteos } from '@/app/(organizador)/actions/invitados.a
 import { estadoInfo } from '@/lib/archivo-estado'
 import { ReproduccionModal } from './_components/ReproduccionModal'
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-
 // Sentinel value for shadcn's <Select>, que no admite value="" en SelectItem.
 // Se mapea de vuelta a `undefined` (sin filtro) al construir la URL.
 const SIN_FILTRO = 'todos'
@@ -229,7 +227,7 @@ export function GaleriaClient({
                     </div>
                   ) : (
                     <Image
-                      src={`${R2_PUBLIC_URL}/${archivo.r2_key}`}
+                      src={archivo.url}
                       alt={`Foto de ${archivo.invitado_nombre} ${archivo.invitado_apellido}`}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"

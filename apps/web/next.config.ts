@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.cloudflare.com',
       },
+      {
+        // URLs firmadas (presigned) de R2, apuntan al endpoint S3 directo
+        // de la cuenta de cada organizador — distinto del dominio público
+        // *.r2.dev de arriba, que ya no se usa para esto.
+        protocol: 'https',
+        hostname: '*.r2.cloudflarestorage.com',
+      },
     ],
   },
   webpack: (config) => {
