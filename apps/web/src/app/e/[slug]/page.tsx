@@ -42,10 +42,6 @@ export default async function EventoLandingPage({ params }: Props) {
 
   if (!evento) notFound()
 
-  const portadaUrl = evento.foto_portada_url
-    ? `${process.env.R2_PUBLIC_URL}/${evento.foto_portada_url}`
-    : null
-
   if (evento.estado !== 'activo') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
@@ -57,6 +53,20 @@ export default async function EventoLandingPage({ params }: Props) {
         </p>
       </div>
     )
+  }
+
+  let portadaUrl: string | null = null
+  if (evento.foto_portada_url) {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+      const res = await fetch(`${apiUrl}/eventos/${slug}/portada-url`, { cache: 'no-store' })
+      if (res.ok) {
+        const data = (await res.json()) as { url: string }
+        portadaUrl = data.url
+      }
+    } catch {
+      portadaUrl = null
+    }
   }
 
   return (
