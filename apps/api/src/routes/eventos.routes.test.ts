@@ -21,6 +21,14 @@ vi.mock('../db/index.js', () => ({
 
 vi.mock('dotenv/config', () => ({}))
 
+const getS3ClientForEventoMock = vi.fn()
+const getPresignedReadUrlMock = vi.fn()
+vi.mock('../lib/r2.js', () => ({
+  getS3ClientForEvento: (...args: unknown[]) => getS3ClientForEventoMock(...args),
+  getPresignedReadUrl: (...args: unknown[]) => getPresignedReadUrlMock(...args),
+  StorageNoConfiguradoError: class StorageNoConfiguradoError extends Error {},
+}))
+
 const { createEventosRoutes } = await import('./eventos.routes.js')
 
 const mockEvento = {
@@ -397,5 +405,36 @@ describe('POST /eventos/:slug/invitados/reingresar', () => {
     }
 
     expect(lastStatus).toBe(429)
+  })
+})
+
+describe('GET /eventos/:slug/portada-url', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    selectQueue.length = 0
+  })
+
+  it('devuelve 404 si el evento no tiene portada', async () => {
+    queueSelects([{ ...mockEvento, foto_portada_url: null }])
+
+    const router = createEventosRoutes()
+    const res = await router.request(`/eventos/${mockEvento.slug}/portada-url`)
+
+    expect(res.status).toBe(404)
+  })
+
+  it('devuelve una URL firmada cuando hay portada y storage configurado', async () => {
+    queueSelects([{ ...mockEvento, foto_portada_url: 'eventos/evt-1/portada/foo.jpg' }])
+    getS3ClientForEventoMock.mockResolvedValue({ client: {}, bucket: 'b' })
+    getPresignedReadUrlMock.mockResolvedValue('https://signed.example/foo.jpg')
+
+    const router = createEventosRoutes()
+    const res = await router.request(`/eventos/${mockEvento.slug}/portada-url`)
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ url: 'https://signed.example/foo.jpg' })
   })
 })

@@ -9,6 +9,7 @@ import { registroRateLimitMiddleware } from '../middleware/rate-limit.js'
 import { logger } from '../lib/logger.js'
 import { getIP } from '../lib/ip.js'
 import { normalizarTelefono } from '../lib/telefono.js'
+import { getS3ClientForEvento, getPresignedReadUrl, StorageNoConfiguradoError } from '../lib/r2.js'
 
 const registroSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio').max(100),
@@ -185,6 +186,30 @@ export function createEventosRoutes() {
       return c.json({ token, invitado_id: match.id }, 200)
     },
   )
+
+  router.get('/eventos/:slug/portada-url', async (c) => {
+    const { slug } = c.req.param()
+
+    const [evento] = await db
+      .select({ id: eventos.id, foto_portada_url: eventos.foto_portada_url })
+      .from(eventos)
+      .where(eq(eventos.slug, slug))
+
+    if (!evento || !evento.foto_portada_url) {
+      return c.json({ error: 'Portada no disponible' }, 404)
+    }
+
+    try {
+      const clientInfo = await getS3ClientForEvento(evento.id)
+      const url = await getPresignedReadUrl(clientInfo, evento.foto_portada_url)
+      return c.json({ url }, 200)
+    } catch (err) {
+      if (err instanceof StorageNoConfiguradoError) {
+        return c.json({ error: 'Portada no disponible' }, 404)
+      }
+      throw err
+    }
+  })
 
   return router
 }
