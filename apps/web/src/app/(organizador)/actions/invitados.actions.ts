@@ -3,7 +3,7 @@
 import { db } from '@/lib/db'
 import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { deleteR2Object } from '@/lib/r2'
+import { organizadorApi } from '@/lib/organizador-api-client'
 import { and, asc, eq, ilike, or } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
@@ -103,15 +103,13 @@ export async function eliminarInvitado(
     await assertEventoOwnership(invitado.evento_id)
 
     const archivosDelInvitado = await db
-      .select({ r2_key: archivos.r2_key })
+      .select({ id: archivos.id })
       .from(archivos)
       .where(eq(archivos.invitado_id, invitadoId))
 
-    // Orden crítico: R2 primero para cada archivo. Si alguno falla, no se
-    // toca la DB — mismo criterio que eliminarArchivo en archivos.actions.ts.
-    for (const archivo of archivosDelInvitado) {
-      await deleteR2Object(archivo.r2_key)
-    }
+    // Orden crítico: R2 primero. Si falla, no se toca la DB — mismo
+    // criterio que eliminarArchivo en archivos.actions.ts.
+    await organizadorApi.eliminarArchivosR2(archivosDelInvitado.map((a) => a.id))
 
     await db.delete(archivos).where(eq(archivos.invitado_id, invitadoId))
     await db.delete(invitados).where(eq(invitados.id, invitadoId))
