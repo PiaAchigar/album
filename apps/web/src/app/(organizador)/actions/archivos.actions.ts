@@ -3,7 +3,7 @@
 import { db } from '@/lib/db'
 import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { deleteR2Object } from '@/lib/r2'
+import { organizadorApi } from '@/lib/organizador-api-client'
 import { and, count, eq, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
@@ -19,6 +19,7 @@ export interface ArchivoConInvitado {
   invitado_id: string
   invitado_nombre: string
   invitado_apellido: string
+  url: string
 }
 
 async function getOrganizadorId(): Promise<string> {
@@ -134,7 +135,7 @@ export async function eliminarArchivo(
     const archivo = await assertArchivoOwnership(archivoId)
 
     // Orden crítico: R2 primero. Si falla, no se toca la DB ni el contador.
-    await deleteR2Object(archivo.r2_key)
+    await organizadorApi.eliminarArchivosR2([archivoId])
 
     await db.delete(archivos).where(eq(archivos.id, archivoId))
 
@@ -193,6 +194,8 @@ export async function obtenerArchivoDetalle(archivoId: string): Promise<{
 
     if (!row) return null
 
+    const { urls } = await organizadorApi.urlsLectura([row.id])
+
     const siblings = await db
       .select({ id: archivos.id })
       .from(archivos)
@@ -202,7 +205,7 @@ export async function obtenerArchivoDetalle(archivoId: string): Promise<{
     const index = siblings.findIndex((s) => s.id === archivoId)
 
     return {
-      archivo: row,
+      archivo: { ...row, url: urls[row.id] ?? '' },
       prevId: index > 0 ? siblings[index - 1].id : null,
       nextId: index !== -1 && index < siblings.length - 1 ? siblings[index + 1].id : null,
     }
@@ -240,7 +243,11 @@ export async function listarArchivos(
     .where(and(...conditions))
     .orderBy(archivos.created_at)
 
-  return rows
+  if (rows.length === 0) return []
+
+  const { urls } = await organizadorApi.urlsLectura(rows.map((r) => r.id))
+
+  return rows.map((row) => ({ ...row, url: urls[row.id] ?? '' }))
 }
 
 export async function descargarZipAprobados(eventoId: string): Promise<{ keys: string[] }> {
