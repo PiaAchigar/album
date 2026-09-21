@@ -55,9 +55,31 @@ export const archivos = pgTable('archivos', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 
+export const organizadorStorageConfig = pgTable('organizador_storage_config', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizador_id: uuid('organizador_id').notNull().unique(),
+  r2_account_id_cipher: text('r2_account_id_cipher').notNull(),
+  r2_account_id_iv: text('r2_account_id_iv').notNull(),
+  r2_account_id_tag: text('r2_account_id_tag').notNull(),
+  r2_access_key_id_cipher: text('r2_access_key_id_cipher').notNull(),
+  r2_access_key_id_iv: text('r2_access_key_id_iv').notNull(),
+  r2_access_key_id_tag: text('r2_access_key_id_tag').notNull(),
+  r2_secret_access_key_cipher: text('r2_secret_access_key_cipher').notNull(),
+  r2_secret_access_key_iv: text('r2_secret_access_key_iv').notNull(),
+  r2_secret_access_key_tag: text('r2_secret_access_key_tag').notNull(),
+  r2_bucket_name_cipher: text('r2_bucket_name_cipher').notNull(),
+  r2_bucket_name_iv: text('r2_bucket_name_iv').notNull(),
+  r2_bucket_name_tag: text('r2_bucket_name_tag').notNull(),
+  verificado_at: timestamp('verificado_at', { withTimezone: true }),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
 export type Evento = typeof eventos.$inferSelect
 export type NuevoEvento = typeof eventos.$inferInsert
 export type Invitado = typeof invitados.$inferSelect
 export type NuevoInvitado = typeof invitados.$inferInsert
 export type Archivo = typeof archivos.$inferSelect
 export type NuevoArchivo = typeof archivos.$inferInsert
+export type OrganizadorStorageConfig = typeof organizadorStorageConfig.$inferSelect
+export type NuevoOrganizadorStorageConfig = typeof organizadorStorageConfig.$inferInsert

@@ -1,0 +1,20 @@
+CREATE TABLE "organizador_storage_config" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"organizador_id" uuid NOT NULL,
+	"r2_account_id_cipher" text NOT NULL,
+	"r2_account_id_iv" text NOT NULL,
+	"r2_account_id_tag" text NOT NULL,
+	"r2_access_key_id_cipher" text NOT NULL,
+	"r2_access_key_id_iv" text NOT NULL,
+	"r2_access_key_id_tag" text NOT NULL,
+	"r2_secret_access_key_cipher" text NOT NULL,
+	"r2_secret_access_key_iv" text NOT NULL,
+	"r2_secret_access_key_tag" text NOT NULL,
+	"r2_bucket_name_cipher" text NOT NULL,
+	"r2_bucket_name_iv" text NOT NULL,
+	"r2_bucket_name_tag" text NOT NULL,
+	"verificado_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now(),
+	CONSTRAINT "organizador_storage_config_organizador_id_unique" UNIQUE("organizador_id")
+);
