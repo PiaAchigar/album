@@ -83,3 +83,18 @@ export type Archivo = typeof archivos.$inferSelect
 export type NuevoArchivo = typeof archivos.$inferInsert
 export type OrganizadorStorageConfig = typeof organizadorStorageConfig.$inferSelect
 export type NuevoOrganizadorStorageConfig = typeof organizadorStorageConfig.$inferInsert
+
+// ─── Donaciones (Mercado Pago) ─────────────────────────────
+export const donaciones = pgTable('donaciones', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  monto: integer('monto').notNull(),
+  estado: text('estado').notNull().default('pendiente'),
+  origen: text('origen').notNull(),
+  organizador_id: uuid('organizador_id'),
+  mp_preference_id: text('mp_preference_id').notNull(),
+  mp_payment_id: text('mp_payment_id'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
+
+export type Donacion = typeof donaciones.$inferSelect
+export type NuevaDonacion = typeof donaciones.$inferInsert
