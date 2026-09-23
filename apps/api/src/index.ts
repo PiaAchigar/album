@@ -8,6 +8,7 @@ import { corsMiddleware } from './middleware/cors.js'
 import { createEventosRoutes } from './routes/eventos.routes.js'
 import { createArchivosRoutes } from './routes/archivos.routes.js'
 import { createOrganizadorRoutes } from './routes/organizador.routes.js'
+import { createDonacionesRoutes } from './routes/donaciones.routes.js'
 import { logger } from './lib/logger.js'
 
 const app = new Hono()
@@ -40,6 +41,7 @@ app.get('/health', async (c) => {
 app.route('/', createEventosRoutes())
 app.route('/', createArchivosRoutes())
 app.route('/', createOrganizadorRoutes())
+app.route('/', createDonacionesRoutes())
 
 // Without this, an unhandled exception inside a route (e.g. jwt.ts throwing
 // on a missing/short INVITADO_JWT_SECRET) just becomes a bare 500 with
