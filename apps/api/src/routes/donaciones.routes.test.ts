@@ -130,3 +130,99 @@ describe('POST /donaciones', () => {
     expect(valuesMock).toHaveBeenCalledWith(expect.objectContaining({ organizador_id: null }))
   })
 })
+
+describe('POST /donaciones/webhook', () => {
+  function webhookBody(dataId = '999') {
+    return { type: 'payment', data: { id: dataId } }
+  }
+
+  function mockUpdateOk() {
+    const setMock = vi.fn(() => ({ where: async () => [] }))
+    updateMock.mockImplementation(() => ({ set: setMock }))
+    return setMock
+  }
+
+  it('ignora notificaciones que no son de tipo payment', async () => {
+    const res = await post('/donaciones/webhook', { type: 'merchant_order', data: { id: '1' } })
+
+    expect(res.status).toBe(200)
+    expect(verificarFirmaWebhookMock).not.toHaveBeenCalled()
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('rechaza si la firma es inválida', async () => {
+    verificarFirmaWebhookMock.mockReturnValue(false)
+
+    const res = await post('/donaciones/webhook', webhookBody(), {
+      'x-signature': 'ts=1,v1=deadbeef',
+      'x-request-id': 'req-1',
+    })
+
+    expect(res.status).toBe(401)
+    expect(obtenerPagoMock).not.toHaveBeenCalled()
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('marca la donación aprobada cuando Mercado Pago confirma el pago', async () => {
+    verificarFirmaWebhookMock.mockReturnValue(true)
+    obtenerPagoMock.mockResolvedValue({ id: '999', status: 'approved', external_reference: 'don-1' })
+    const setMock = mockUpdateOk()
+
+    const res = await post('/donaciones/webhook', webhookBody(), {
+      'x-signature': 'ts=1,v1=deadbeef',
+      'x-request-id': 'req-1',
+    })
+
+    expect(res.status).toBe(200)
+    expect(setMock).toHaveBeenCalledWith(
+      expect.objectContaining({ estado: 'aprobada', mp_payment_id: '999' }),
+    )
+  })
+
+  it('marca la donación rechazada cuando el pago no está aprobado', async () => {
+    verificarFirmaWebhookMock.mockReturnValue(true)
+    obtenerPagoMock.mockResolvedValue({ id: '999', status: 'rejected', external_reference: 'don-1' })
+    mockUpdateOk()
+    const realSetMock = vi.fn(() => ({ where: async () => [] }))
+    updateMock.mockImplementation(() => ({ set: realSetMock }))
+
+    await post('/donaciones/webhook', webhookBody(), {
+      'x-signature': 'ts=1,v1=deadbeef',
+      'x-request-id': 'req-1',
+    })
+
+    expect(realSetMock).toHaveBeenCalledWith(expect.objectContaining({ estado: 'rechazada' }))
+  })
+
+  it('no rompe si el pago no trae external_reference', async () => {
+    verificarFirmaWebhookMock.mockReturnValue(true)
+    obtenerPagoMock.mockResolvedValue({ id: '999', status: 'approved', external_reference: null })
+
+    const res = await post('/donaciones/webhook', webhookBody(), {
+      'x-signature': 'ts=1,v1=deadbeef',
+      'x-request-id': 'req-1',
+    })
+
+    expect(res.status).toBe(200)
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('es idempotente ante notificaciones duplicadas', async () => {
+    verificarFirmaWebhookMock.mockReturnValue(true)
+    obtenerPagoMock.mockResolvedValue({ id: '999', status: 'approved', external_reference: 'don-1' })
+    mockUpdateOk()
+
+    const res1 = await post('/donaciones/webhook', webhookBody(), {
+      'x-signature': 'ts=1,v1=deadbeef',
+      'x-request-id': 'req-1',
+    })
+    const res2 = await post('/donaciones/webhook', webhookBody(), {
+      'x-signature': 'ts=1,v1=deadbeef',
+      'x-request-id': 'req-1',
+    })
+
+    expect(res1.status).toBe(200)
+    expect(res2.status).toBe(200)
+    expect(updateMock).toHaveBeenCalledTimes(2)
+  })
+})

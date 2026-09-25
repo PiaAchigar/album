@@ -4,8 +4,10 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { db } from '../db/index.js'
 import { donaciones } from '@album/database'
-import { crearPreferenciaDonacion } from '../lib/mercadopago.js'
+import { crearPreferenciaDonacion, obtenerPago } from '../lib/mercadopago.js'
 import { createRateLimiter } from '../middleware/rate-limit.js'
+import { verificarFirmaWebhook } from '../lib/mercadopago-signature.js'
+import { eq } from 'drizzle-orm'
 import { logger } from '../lib/logger.js'
 import { getIP } from '../lib/ip.js'
 
@@ -64,6 +66,45 @@ export function createDonacionesRoutes() {
       }
     },
   )
+
+  router.post('/donaciones/webhook', async (c) => {
+    const body = await c.req.json().catch(() => null)
+
+    if (!body || typeof body !== 'object' || body.type !== 'payment' || !body.data?.id) {
+      return c.json({ ok: true }, 200)
+    }
+
+    const dataId = String(body.data.id)
+    const xSignature = c.req.header('x-signature')
+    const xRequestId = c.req.header('x-request-id')
+
+    const firmaValida = verificarFirmaWebhook({ xSignature, xRequestId }, dataId)
+    if (!firmaValida) {
+      logger.warn({ dataId, ip: getIP(c) }, 'Webhook de Mercado Pago con firma inválida')
+      return c.json({ error: 'Firma inválida' }, 401)
+    }
+
+    const pago = await obtenerPago(dataId)
+
+    if (!pago.external_reference) {
+      logger.warn({ dataId }, 'Pago de Mercado Pago sin external_reference')
+      return c.json({ ok: true }, 200)
+    }
+
+    const nuevoEstado = pago.status === 'approved' ? 'aprobada' : 'rechazada'
+
+    await db
+      .update(donaciones)
+      .set({ estado: nuevoEstado, mp_payment_id: pago.id })
+      .where(eq(donaciones.id, pago.external_reference))
+
+    logger.info(
+      { donacion_id: pago.external_reference, estado: nuevoEstado, mp_payment_id: pago.id },
+      'Donación actualizada desde webhook',
+    )
+
+    return c.json({ ok: true }, 200)
+  })
 
   return router
 }
