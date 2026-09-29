@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 
+type RegisterResult = { success: true; organizador_id: string } | { error: string }
 type AuthResult = { success: true } | { error: string }
 
 // Supabase devuelve mensajes en inglés (o, si el request tarda o falla a
@@ -39,11 +40,11 @@ export async function registerOrganizador(formData: {
   nombre: string
   email: string
   password: string
-}): Promise<AuthResult> {
+}): Promise<RegisterResult> {
   try {
     const supabase = await createSupabaseServerClient()
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
@@ -56,7 +57,12 @@ export async function registerOrganizador(formData: {
       return { error: mensajeAuthAmigable(error.message) }
     }
 
-    return { success: true }
+    if (!data.user) {
+      console.error('[registerOrganizador] signUp sin error pero sin user')
+      return { error: mensajeAuthAmigable(undefined) }
+    }
+
+    return { success: true, organizador_id: data.user.id }
   } catch (err) {
     console.error('[registerOrganizador] excepción no manejada', err)
     return { error: mensajeAuthAmigable(undefined) }

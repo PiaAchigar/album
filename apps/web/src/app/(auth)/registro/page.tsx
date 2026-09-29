@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { OrganizadorTopbar } from '@/components/organizador-topbar'
 import { registerOrganizador } from '@/app/(organizador)/actions/auth.actions'
+import { SelectorDonacion } from '@/components/selector-donacion'
 
 const registroSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -33,7 +34,7 @@ type RegistroValues = z.infer<typeof registroSchema>
 export default function RegistroPage() {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [organizadorId, setOrganizadorId] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<RegistroValues>({
@@ -48,12 +49,11 @@ export default function RegistroPage() {
       setServerError(result.error)
       return
     }
+    setOrganizadorId(result.organizador_id)
     // Supabase sends a confirmation email by default.
-    // If email confirmation is disabled in Supabase settings, redirect directly.
-    setSuccess(true)
   }
 
-  if (success) {
+  if (organizadorId) {
     return (
       <div className="ctx-organizador flex min-h-screen flex-col bg-backdrop">
         <OrganizadorTopbar />
@@ -67,6 +67,23 @@ export default function RegistroPage() {
               </Link>
               .
             </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+            <h2 className="text-lg font-semibold text-foreground">¿Querés apoyar el proyecto?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Album es gratis y siempre lo va a ser. Si querés donar para ayudar a sostenerlo, es
+              totalmente opcional.
+            </p>
+            <div className="mt-4">
+              <SelectorDonacion origen="registro_organizador" organizadorId={organizadorId} />
+            </div>
+            <Link
+              href="/login"
+              className="mt-4 block text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Ahora no
+            </Link>
           </div>
         </main>
       </div>
