@@ -58,32 +58,34 @@ export default function RegistroPage() {
       <div className="ctx-organizador flex min-h-screen flex-col bg-backdrop">
         <OrganizadorTopbar />
         <main className="flex flex-1 items-center justify-center px-4 py-12">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center shadow-sm sm:p-12">
-            <h1 className="text-2xl font-bold tracking-tight text-primary">¡Cuenta creada!</h1>
-            <p className="mt-3 text-muted-foreground">
-              Revisá tu email para confirmar la cuenta y después ingresá desde{' '}
-              <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
-                aquí
-              </Link>
-              .
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
-            <h2 className="text-lg font-semibold text-foreground">¿Querés apoyar el proyecto?</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Album es gratis y siempre lo va a ser. Si querés donar para ayudar a sostenerlo, es
-              totalmente opcional.
-            </p>
-            <div className="mt-4">
-              <SelectorDonacion origen="registro_organizador" organizadorId={organizadorId} />
+          <div className="w-full max-w-md space-y-6">
+            <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm sm:p-12">
+              <h1 className="text-2xl font-bold tracking-tight text-primary">¡Cuenta creada!</h1>
+              <p className="mt-3 text-muted-foreground">
+                Revisá tu email para confirmar la cuenta y después ingresá desde{' '}
+                <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+                  aquí
+                </Link>
+                .
+              </p>
             </div>
-            <Link
-              href="/login"
-              className="mt-4 block text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Ahora no
-            </Link>
+
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+              <h2 className="text-lg font-semibold text-foreground">¿Querés apoyar el proyecto?</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Album es gratis y siempre lo va a ser. Si querés donar para ayudar a sostenerlo, es
+                totalmente opcional.
+              </p>
+              <div className="mt-4">
+                <SelectorDonacion origen="registro_organizador" organizadorId={organizadorId} />
+              </div>
+              <Link
+                href="/login"
+                className="mt-4 block text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+              >
+                Ahora no
+              </Link>
+            </div>
           </div>
         </main>
       </div>
