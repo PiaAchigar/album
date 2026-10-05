@@ -84,9 +84,9 @@ export async function actualizarLimites(
     limite_videos_por_invitado: number
   },
 ): Promise<void> {
-  await getOrganizadorId()
+  const organizadorId = await getOrganizadorId()
 
-  await db
+  const actualizados = await db
     .update(eventos)
     .set({
       cantidad_invitados_totales: data.cantidad_invitados_totales,
@@ -94,7 +94,10 @@ export async function actualizarLimites(
       limite_fotos_por_invitado: data.limite_fotos_por_invitado,
       limite_videos_por_invitado: data.limite_videos_por_invitado,
     })
-    .where(eq(eventos.id, eventoId))
+    .where(and(eq(eventos.id, eventoId), eq(eventos.organizador_id, organizadorId)))
+    .returning({ id: eventos.id })
+
+  if (actualizados.length === 0) throw new Error('Evento no encontrado')
 }
 
 export async function activarEvento(
@@ -103,10 +106,12 @@ export async function activarEvento(
   try {
     const organizadorId = await getOrganizadorId()
 
+    const delOrganizador = and(eq(eventos.id, eventoId), eq(eventos.organizador_id, organizadorId))
+
     const [existing] = await db
       .select({ nombre_evento: eventos.nombre_evento })
       .from(eventos)
-      .where(eq(eventos.id, eventoId))
+      .where(delOrganizador)
 
     if (!existing) return { error: 'Evento no encontrado' }
 
@@ -115,9 +120,8 @@ export async function activarEvento(
     await db
       .update(eventos)
       .set({ estado: 'activo', slug })
-      .where(eq(eventos.id, eventoId))
+      .where(delOrganizador)
 
-    void organizadorId
     revalidatePath('/eventos', 'page')
     return { slug }
   } catch (err) {
@@ -137,12 +141,14 @@ export async function listarEventos(): Promise<EventoRow[]> {
 }
 
 export async function obtenerEvento(id: string): Promise<EventoRow | null> {
-  await getOrganizadorId()
+  const organizadorId = await getOrganizadorId()
 
+  // Un evento de otro organizador se trata igual que uno inexistente: el
+  // panel responde 404 sin revelar que el id existe.
   const [evento] = await db
     .select()
     .from(eventos)
-    .where(eq(eventos.id, id))
+    .where(and(eq(eventos.id, id), eq(eventos.organizador_id, organizadorId)))
 
   return evento ?? null
 }
