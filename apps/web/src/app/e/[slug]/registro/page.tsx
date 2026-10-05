@@ -81,19 +81,8 @@ export default function RegistroPage({ params }: Props) {
         }),
       })
 
-      console.log('[registro] response received', {
-        status: res.status,
-        ok: res.ok,
-        url: res.url,
-      })
-
       if (!res.ok) {
-        const rawText = await res.clone().text().catch(() => '<no se pudo leer el body>')
         const body = await res.json().catch(() => ({}))
-        console.error('[registro] respuesta no-ok', {
-          status: res.status,
-          rawText,
-        })
         setServerError((body as { error?: string }).error ?? 'Ocurrió un error. Intentá de nuevo.')
         return
       }
@@ -102,8 +91,6 @@ export default function RegistroPage({ params }: Props) {
         token: string
         invitado_id: string
       }
-
-      console.log('[registro] registro exitoso', { invitado_id })
 
       localStorage.setItem(`album_token_${slug}`, token)
       localStorage.setItem(`album_invitado_${slug}`, invitado_id)

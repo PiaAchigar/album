@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { archivos, eventos, invitados } from '@album/database'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { generateSlug } from '@/lib/slug'
+import { esKeyDePortadaDelEvento } from '@/lib/portada'
 import { organizadorApi } from '@/lib/organizador-api-client'
 import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
@@ -55,12 +56,23 @@ export async function actualizarPortada(
 ): Promise<void> {
   const organizadorId = await getOrganizadorId()
 
-  await db
+  if (!esKeyDePortadaDelEvento(eventoId, r2Key)) {
+    throw new Error('Key de portada inválida')
+  }
+
+  // `db` es una conexión directa a Postgres que no pasa por RLS, así que el
+  // filtro por organizador_id es el que impide tocar eventos ajenos.
+  const actualizados = await db
     .update(eventos)
     .set({ foto_portada_url: r2Key })
-    .where(eq(eventos.id, eventoId))
-  // RLS en Supabase garantiza que solo el organizador dueño pueda actualizar
-  void organizadorId
+    .where(and(eq(eventos.id, eventoId), eq(eventos.organizador_id, organizadorId)))
+    .returning({ slug: eventos.slug })
+
+  const [evento] = actualizados
+  if (!evento) throw new Error('Evento no encontrado')
+
+  revalidatePath(`/eventos/${eventoId}/portada`)
+  revalidatePath(`/e/${evento.slug}`)
 }
 
 export async function actualizarLimites(

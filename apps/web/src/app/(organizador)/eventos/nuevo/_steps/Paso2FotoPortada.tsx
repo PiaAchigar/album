@@ -4,12 +4,12 @@ import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { CheckCircle2, ImagePlus, UploadCloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { actualizarPortada } from '@/app/(organizador)/actions/eventos.actions'
-import { solicitarPresignedPortada } from '../actions'
-
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
-const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic']
-const MAX_SIZE_MB = 10
+import {
+  PORTADA_ACCEPT,
+  PORTADA_MAX_SIZE_MB,
+  subirPortada,
+  validarArchivoPortada,
+} from '../../_lib/subir-portada'
 
 interface Props {
   eventoId: string
@@ -28,17 +28,9 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
   async function processFile(file: File) {
     setError(null)
 
-    const hasAllowedExtension = ALLOWED_EXTENSIONS.some((ext) =>
-      file.name.toLowerCase().endsWith(ext),
-    )
-
-    if (!ALLOWED_TYPES.includes(file.type) && !hasAllowedExtension) {
-      setError('Solo se admiten imágenes JPG, PNG, WebP o HEIC.')
-      return
-    }
-
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      setError(`La imagen no puede superar los ${MAX_SIZE_MB} MB.`)
+    const validationError = validarArchivoPortada(file)
+    if (validationError) {
+      setError(validationError)
       return
     }
 
@@ -47,20 +39,7 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
 
     setUploading(true)
     try {
-      const extension = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-      const { uploadUrl, r2Key: key } = await solicitarPresignedPortada(eventoId, extension)
-
-      const res = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      })
-
-      if (!res.ok) {
-        throw new Error(`R2 respondió ${res.status}`)
-      }
-
-      await actualizarPortada(eventoId, key)
+      const key = await subirPortada(eventoId, file)
       setR2Key(key)
     } catch (err) {
       console.error('[Paso2FotoPortada] upload error', err)
@@ -107,7 +86,7 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-              Tamaño máximo: {MAX_SIZE_MB} MB
+              Tamaño máximo: {PORTADA_MAX_SIZE_MB} MB
             </li>
           </ul>
         </div>
@@ -146,7 +125,7 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
         <input
           ref={inputRef}
           type="file"
-          accept={[...ALLOWED_TYPES, ...ALLOWED_EXTENSIONS].join(',')}
+          accept={PORTADA_ACCEPT}
           className="hidden"
           onChange={handleFileChange}
         />

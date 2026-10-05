@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChartBar, Images, Users } from 'lucide-react'
+import { ChartBar, ImageIcon, Images, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * Shared nav for the event panel (Resumen / Galería / Invitados). Renders
+ * Shared nav for the event panel (Resumen / Galería / Invitados / Portada). Renders
  * both the desktop side rail and the mobile bottom tab bar since they share
  * the same links + active-state logic — split only by responsive classes.
  */
@@ -22,6 +22,7 @@ export function PanelNav({ eventoId }: Props) {
     { href: resumenHref, label: 'Resumen', icon: ChartBar },
     { href: `${resumenHref}/galeria`, label: 'Galería', icon: Images },
     { href: `${resumenHref}/invitados`, label: 'Invitados', icon: Users },
+    { href: `${resumenHref}/portada`, label: 'Portada', icon: ImageIcon },
   ]
 
   const isActive = (href: string) =>

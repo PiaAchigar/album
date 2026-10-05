@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { eq } from 'drizzle-orm'
 import { CalendarDays, Camera, Clock3 } from 'lucide-react'
 import { db } from '@/lib/db'
 import { eventos } from '@album/database'
 import { Button } from '@/components/ui/button'
+import { PortadaImagen } from '@/components/portada-imagen'
+import { obtenerUrlPortada } from '@/lib/portada'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -55,19 +56,7 @@ export default async function EventoLandingPage({ params }: Props) {
     )
   }
 
-  let portadaUrl: string | null = null
-  if (evento.foto_portada_url) {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
-      const res = await fetch(`${apiUrl}/eventos/${slug}/portada-url`, { cache: 'no-store' })
-      if (res.ok) {
-        const data = (await res.json()) as { url: string }
-        portadaUrl = data.url
-      }
-    } catch {
-      portadaUrl = null
-    }
-  }
+  const portadaUrl = evento.foto_portada_url ? await obtenerUrlPortada(slug) : null
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -88,17 +77,13 @@ export default async function EventoLandingPage({ params }: Props) {
       <main className="flex-1 pt-12">
         {/* Hero */}
         <section className="relative flex h-[60vh] w-full items-end overflow-hidden sm:h-[70vh]">
-          {portadaUrl ? (
-            <Image
-              src={portadaUrl}
-              alt={`Foto de portada de ${evento.nombre_evento}`}
-              fill
-              className="object-cover"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-yellow-200" />
-          )}
+          <PortadaImagen
+            src={portadaUrl}
+            alt={`Foto de portada de ${evento.nombre_evento}`}
+            className="object-cover"
+            priority
+            fallback={<div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-yellow-200" />}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
           <div className="relative z-10 w-full px-4 pb-8">
