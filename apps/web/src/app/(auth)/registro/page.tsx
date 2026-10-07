@@ -55,7 +55,7 @@ export default function RegistroPage() {
 
   if (organizadorId) {
     return (
-      <div className="ctx-organizador flex min-h-screen flex-col bg-backdrop">
+      <div className="ctx-organizador flex flex-1 flex-col bg-backdrop">
         <OrganizadorTopbar />
         <main className="flex flex-1 items-center justify-center px-4 py-12">
           <div className="w-full max-w-md space-y-6">
@@ -93,7 +93,7 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="ctx-organizador flex min-h-screen flex-col">
+    <div className="ctx-organizador flex flex-1 flex-col">
       <OrganizadorTopbar />
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Marketing panel — decorative, hidden on narrow viewports (mobile-first). */}

@@ -53,7 +53,7 @@ export function PanelNav({ eventoId }: Props) {
         </nav>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-border bg-background/95 py-2 backdrop-blur-sm md:hidden">
+      <nav data-panel-nav className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-border bg-background/95 py-2 backdrop-blur-sm md:hidden">
         {items.map(({ href, label, icon: Icon }) => {
           const active = isActive(href)
           return (

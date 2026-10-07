@@ -36,7 +36,7 @@ export default function NuevoEventoPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       <OrganizadorTopbar />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-6">
         <div className="mb-8 space-y-1">

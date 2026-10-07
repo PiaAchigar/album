@@ -25,7 +25,7 @@ export default async function QRPage({ params }: Props) {
   })
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       <OrganizadorTopbar />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">

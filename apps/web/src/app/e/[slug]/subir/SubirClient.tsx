@@ -365,7 +365,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
 
   if (!isLoaded || !token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-backdrop">
+      <div className="flex flex-1 items-center justify-center bg-backdrop">
         <p className="text-sm text-muted-foreground">Cargando…</p>
       </div>
     )
@@ -378,7 +378,7 @@ export function SubirClient({ slug, nombreEvento, limiteFotos, limiteVideos }: P
   const videoAtLimit = videosUsadas >= limiteVideos
 
   return (
-    <div className="flex min-h-screen flex-col bg-backdrop">
+    <div className="flex flex-1 flex-col bg-backdrop">
       <header className="fixed top-0 z-30 flex h-12 w-full items-center justify-between bg-background/80 px-4 backdrop-blur-md">
         <Link
           href={`/e/${slug}`}

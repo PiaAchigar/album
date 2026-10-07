@@ -5,7 +5,7 @@ export default async function ConfiguracionStoragePage() {
   const status = await obtenerStorageConfigStatus()
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg rounded-xl border border-border bg-card p-8 shadow-sm sm:p-10">
         <h1 className="text-2xl font-bold tracking-tight text-primary">
           Configurá tu almacenamiento
@@ -14,6 +14,18 @@ export default async function ConfiguracionStoragePage() {
           Album guarda las fotos y videos de tus invitados en tu propia cuenta de Cloudflare
           R2 — nunca en la nuestra. Necesitamos las credenciales de tu bucket antes de que
           puedas crear o administrar eventos.
+        </p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          ¿No sabés de dónde sacarlas?{' '}
+          <a
+            href="/guia-almacenamiento"
+            target="_blank"
+            rel="noopener"
+            className="font-medium text-primary underline underline-offset-2"
+          >
+            Seguí la guía paso a paso
+          </a>
+          .
         </p>
         <div className="mt-8">
           <StorageConfigForm status={status} />

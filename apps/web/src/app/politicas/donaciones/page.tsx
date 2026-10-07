@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { SiteFooter } from '@/components/site-footer'
 
 export const metadata: Metadata = {
   title: 'Política de Donaciones — Album',
@@ -9,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function PoliticaDonacionesPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-12">
         <Link
           href="/"
           className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -84,6 +85,7 @@ export default function PoliticaDonacionesPage() {
           </section>
         </div>
       </div>
+      <SiteFooter />
     </div>
   )
 }

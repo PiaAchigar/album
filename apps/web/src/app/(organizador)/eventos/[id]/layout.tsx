@@ -26,7 +26,7 @@ export default async function EventoPanelLayout({ params, children }: Props) {
   const { label, variant } = estadoInfo(evento.estado)
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:px-6">
         <Link
           href="/eventos"
@@ -43,7 +43,7 @@ export default async function EventoPanelLayout({ params, children }: Props) {
 
       <div className="flex flex-1">
         <PanelNav eventoId={id} />
-        <main className="w-full flex-1 px-4 py-6 pb-20 sm:px-6 md:pb-4">
+        <main className="w-full flex-1 px-4 py-6 sm:px-6">
           <div className="mx-auto max-w-4xl">{children}</div>
         </main>
       </div>

@@ -45,7 +45,7 @@ export default async function EventoLandingPage({ params }: Props) {
 
   if (evento.estado !== 'activo') {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
         <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold text-foreground">
           {evento.nombre_evento}
         </h1>
@@ -59,7 +59,7 @@ export default async function EventoLandingPage({ params }: Props) {
   const portadaUrl = evento.foto_portada_url ? await obtenerUrlPortada(slug) : null
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex flex-1 flex-col bg-background">
       {/*
         Fixed top app bar — mirrors the mockup's TopAppBar, minus the close
         (X) icon. There's nowhere for it to navigate to (a guest lands here

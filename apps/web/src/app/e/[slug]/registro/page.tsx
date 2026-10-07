@@ -103,7 +103,7 @@ export default function RegistroPage({ params }: Props) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-backdrop">
+    <div className="flex flex-1 flex-col bg-backdrop">
       {/*
         Fixed top app bar, mirroring the landing page's header (see
         evento/[slug]/page.tsx). Unlike the landing page, this screen has a

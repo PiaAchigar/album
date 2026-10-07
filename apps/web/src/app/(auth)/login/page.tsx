@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="ctx-organizador flex min-h-screen flex-col bg-backdrop">
+    <div className="ctx-organizador flex flex-1 flex-col bg-backdrop">
       <OrganizadorTopbar />
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-[480px] rounded-xl border border-border bg-card p-8 shadow-sm sm:p-12">

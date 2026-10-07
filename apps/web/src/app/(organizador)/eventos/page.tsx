@@ -29,7 +29,7 @@ export default async function EventosPage() {
   const misEventos = await listarEventos()
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       <OrganizadorTopbar />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
         <div className="mb-8 flex items-center justify-between">
