@@ -9,6 +9,7 @@ import {
   getInvitadoPresignedUpload,
   deleteR2Object,
   getPresignedReadUrl,
+  getR2ObjectSize,
   StorageNoConfiguradoError,
 } from '../lib/r2.js'
 import { uploadRateLimitMiddleware } from '../middleware/rate-limit.js'
@@ -153,6 +154,12 @@ export function createArchivosRoutes() {
         return c.json({ error: 'r2_key no válida' }, 403)
       }
 
+      // Real size from R2 (not trusted from the client). Best effort: if it
+      // can't be read the upload still counts, just without a size.
+      const tamano_bytes = await getS3ClientForEvento(evento.id)
+        .then((r2) => getR2ObjectSize(r2, r2_key))
+        .catch(() => null)
+
       const [inserted] = await db
         .insert(archivos)
         .values({
@@ -160,6 +167,7 @@ export function createArchivosRoutes() {
           invitado_id,
           tipo,
           r2_key,
+          tamano_bytes,
           estado: 'aprobada',
         })
         .returning({ id: archivos.id })

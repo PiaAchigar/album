@@ -52,7 +52,7 @@ async function assertArchivoOwnership(archivoId: string): Promise<ArchivoRow> {
  * Verifica que el evento exista y pertenezca al organizador autenticado.
  * Lanza si no existe o si pertenece a otro organizador.
  */
-async function assertEventoOwnership(eventoId: string): Promise<void> {
+async function assertEventoOwnership(eventoId: string): Promise<string> {
   const organizadorId = await getOrganizadorId()
 
   const [row] = await db
@@ -62,6 +62,8 @@ async function assertEventoOwnership(eventoId: string): Promise<void> {
     .limit(1)
 
   if (!row) throw new Error('Evento no encontrado')
+
+  return organizadorId
 }
 
 export async function obtenerEstadisticasEvento(eventoId: string): Promise<{
@@ -69,10 +71,23 @@ export async function obtenerEstadisticasEvento(eventoId: string): Promise<{
   totalFotos: number
   totalVideos: number
   pendientes: number
+  /** Bytes in R2 for this event's files (only files with a known size). */
+  bytesEvento: number
+  /** Bytes in R2 across all of the organizer's events — the 10 GB free tier is per account. */
+  bytesCuenta: number
+  /** Files of this event uploaded before sizes were recorded (not counted above). */
+  archivosSinTamano: number
 }> {
-  await assertEventoOwnership(eventoId)
+  const organizadorId = await assertEventoOwnership(eventoId)
 
-  const [[invitadosRow], [fotosRow], [videosRow], [pendientesRow]] = await Promise.all([
+  const [
+    [invitadosRow],
+    [fotosRow],
+    [videosRow],
+    [pendientesRow],
+    [eventoBytesRow],
+    [cuentaBytesRow],
+  ] = await Promise.all([
     db.select({ total: count() }).from(invitados).where(eq(invitados.evento_id, eventoId)),
     db
       .select({ total: count() })
@@ -86,6 +101,18 @@ export async function obtenerEstadisticasEvento(eventoId: string): Promise<{
       .select({ total: count() })
       .from(archivos)
       .where(and(eq(archivos.evento_id, eventoId), eq(archivos.estado, 'pendiente'))),
+    db
+      .select({
+        bytes: sql<string>`coalesce(sum(${archivos.tamano_bytes}), 0)`,
+        sinTamano: sql<number>`count(*) filter (where ${archivos.tamano_bytes} is null)`.mapWith(Number),
+      })
+      .from(archivos)
+      .where(eq(archivos.evento_id, eventoId)),
+    db
+      .select({ bytes: sql<string>`coalesce(sum(${archivos.tamano_bytes}), 0)` })
+      .from(archivos)
+      .innerJoin(eventos, eq(archivos.evento_id, eventos.id))
+      .where(eq(eventos.organizador_id, organizadorId)),
   ])
 
   return {
@@ -93,6 +120,10 @@ export async function obtenerEstadisticasEvento(eventoId: string): Promise<{
     totalFotos: fotosRow.total,
     totalVideos: videosRow.total,
     pendientes: pendientesRow.total,
+    // Postgres returns sum(bigint) as numeric → string; well within JS safe integers.
+    bytesEvento: Number(eventoBytesRow.bytes),
+    bytesCuenta: Number(cuentaBytesRow.bytes),
+    archivosSinTamano: eventoBytesRow.sinTamano,
   }
 }
 

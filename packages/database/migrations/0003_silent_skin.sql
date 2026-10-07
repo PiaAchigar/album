@@ -1,0 +1,1 @@
+ALTER TABLE "archivos" ADD COLUMN "tamano_bytes" bigint;

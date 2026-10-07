@@ -93,6 +93,61 @@ export async function loginOrganizador(formData: {
   }
 }
 
+/**
+ * Sends the "reset password" email. Always reports success (unless the
+ * request itself fails) so the form doesn't reveal which emails have an
+ * account. The link lands on /auth/confirm, which opens a session and
+ * forwards to /restablecer.
+ */
+export async function solicitarRecuperacion(email: string): Promise<AuthResult> {
+  try {
+    const supabase = await createSupabaseServerClient()
+    const appUrl = process.env.PUBLIC_APP_URL ?? 'https://www.album.com.ar'
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${appUrl}/auth/confirm?next=/restablecer`,
+    })
+
+    if (error && error.message.toLowerCase().includes('rate limit')) {
+      return { error: mensajeAuthAmigable(error.message) }
+    }
+    if (error) console.error('[solicitarRecuperacion]', error)
+
+    return { success: true }
+  } catch (err) {
+    console.error('[solicitarRecuperacion] excepción no manejada', err)
+    return { error: mensajeAuthAmigable(undefined) }
+  }
+}
+
+/** Sets a new password for the session opened by the recovery link. */
+export async function actualizarContrasena(password: string): Promise<AuthResult> {
+  try {
+    const supabase = await createSupabaseServerClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: 'El link venció o ya se usó. Pedí uno nuevo desde "¿Olvidaste tu contraseña?".' }
+    }
+
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) {
+      console.error('[actualizarContrasena]', error)
+      if (error.message.toLowerCase().includes('different from the old')) {
+        return { error: 'La contraseña nueva tiene que ser distinta de la anterior.' }
+      }
+      return { error: mensajeAuthAmigable(error.message) }
+    }
+
+    return { success: true }
+  } catch (err) {
+    console.error('[actualizarContrasena] excepción no manejada', err)
+    return { error: mensajeAuthAmigable(undefined) }
+  }
+}
+
 export async function logoutOrganizador(): Promise<void> {
   const supabase = await createSupabaseServerClient()
   await supabase.auth.signOut()

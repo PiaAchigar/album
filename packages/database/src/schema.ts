@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   date,
   integer,
@@ -51,6 +52,9 @@ export const archivos = pgTable('archivos', {
   tipo: text('tipo').notNull(),
   r2_key: text('r2_key').notNull(),
   thumbnail_key: text('thumbnail_key'),
+  // Real size in R2, read with HeadObject when the upload is confirmed.
+  // Null for files uploaded before this column existed.
+  tamano_bytes: bigint('tamano_bytes', { mode: 'number' }),
   estado: text('estado').notNull().default('pendiente'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })

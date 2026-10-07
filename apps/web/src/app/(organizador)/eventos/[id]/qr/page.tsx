@@ -1,10 +1,47 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import QRCode from 'qrcode'
-import { CalendarCheck2 } from 'lucide-react'
+import {
+  CalendarCheck2,
+  Lightbulb,
+  MessageCircle,
+  Monitor,
+  Printer,
+  ScanLine,
+  Mic,
+  type LucideIcon,
+} from 'lucide-react'
 import { obtenerEvento } from '@/app/(organizador)/actions/eventos.actions'
 import { OrganizadorTopbar } from '@/components/organizador-topbar'
 import { QRActions } from './_components/QRActions'
+
+const CONSEJOS_QR: { icon: LucideIcon; titulo: string; texto: string }[] = [
+  {
+    icon: ScanLine,
+    titulo: 'Probalo antes de imprimir',
+    texto: 'Escanealo con tu celular y fijate que abra la página de tu evento. Mejor no te registres: ocuparías un lugar del cupo de invitados.',
+  },
+  {
+    icon: Printer,
+    titulo: 'Ponelo en cada mesa',
+    texto: 'Imprimilo de al menos 5 × 5 cm, en un cartelito o portarretrato, con una frase tipo "¡Subí tus fotos de la fiesta!".',
+  },
+  {
+    icon: Monitor,
+    titulo: 'Mostralo en la pantalla del salón',
+    texto: 'Si hay proyector o pantalla, pasalo entre canción y canción: es el lugar donde más gente lo ve a la vez.',
+  },
+  {
+    icon: MessageCircle,
+    titulo: 'Mandá el link al grupo',
+    texto: 'Compartí el link en el grupo de WhatsApp del evento, antes y también al día siguiente, para las fotos que quedaron en los celulares.',
+  },
+  {
+    icon: Mic,
+    titulo: 'Que lo anuncien',
+    texto: 'Pedile al DJ o al animador que lo mencione en algún momento de la noche. Un recordatorio en vivo hace la diferencia.',
+  },
+]
 
 interface Props {
   params: Promise<{ id: string }>
@@ -83,6 +120,26 @@ export default async function QRPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        <section className="mt-12 rounded-2xl border border-border bg-card p-6 sm:p-8">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Lightbulb className="h-5 w-5 text-amber-500" aria-hidden="true" />
+            Ideas para que todos lo usen
+          </h2>
+          <ul className="mt-5 grid gap-5 sm:grid-cols-2">
+            {CONSEJOS_QR.map(({ icon: Icon, titulo, texto }) => (
+              <li key={titulo} className="flex gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{titulo}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{texto}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
     </div>
   )

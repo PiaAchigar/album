@@ -6,7 +6,7 @@ import { listarEventos } from '@/app/(organizador)/actions/eventos.actions'
 import { logoutOrganizador } from '@/app/(organizador)/actions/auth.actions'
 import { OrganizadorTopbar } from '@/components/organizador-topbar'
 import { EventoActionsMenu } from './_components/EventoActionsMenu'
-import { CalendarIcon, PlusIcon } from 'lucide-react'
+import { CalendarIcon, DownloadIcon, PlusIcon } from 'lucide-react'
 
 function estadoInfo(estado: string) {
   if (estado === 'activo') return { label: 'Activo', variant: 'default' as const }
@@ -23,6 +23,15 @@ function formatearFecha(fecha: string) {
     day: 'numeric',
   })
   return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+// After this many days past the event date, remind the organizer to download
+// the ZIP and free up space (deleting an event also deletes its R2 files).
+const DIAS_PARA_RECORDAR_DESCARGA = 7
+
+function diasDesde(fecha: string) {
+  const ms = Date.now() - new Date(`${fecha}T00:00:00`).getTime()
+  return Math.floor(ms / 86_400_000)
 }
 
 export default async function EventosPage() {
@@ -95,6 +104,23 @@ export default async function EventosPage() {
                       </p>
                     </CardContent>
                   </Link>
+                  {evento.estado !== 'borrador' &&
+                    diasDesde(evento.fecha) >= DIAS_PARA_RECORDAR_DESCARGA && (
+                      <div className="mx-6 mb-4 flex gap-2 rounded-md bg-amber-500/10 p-3 text-sm text-amber-900">
+                        <DownloadIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                        <p>
+                          ¿Ya guardaste las fotos? Descargá el ZIP desde la{' '}
+                          <Link
+                            href={`/eventos/${evento.id}/galeria`}
+                            className="font-medium underline underline-offset-2"
+                          >
+                            galería
+                          </Link>
+                          . Cuando lo tengas, podés eliminar el evento para liberar espacio en tu
+                          almacenamiento.
+                        </p>
+                      </div>
+                    )}
                   <div className="flex justify-end border-t border-border px-6 py-1.5">
                     <EventoActionsMenu eventoId={evento.id} estado={evento.estado} />
                   </div>

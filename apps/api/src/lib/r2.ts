@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { nanoid } from 'nanoid'
@@ -140,4 +141,17 @@ export async function testR2Credentials(clientInfo: OrganizadorR2Client): Promis
   await clientInfo.client.send(
     new DeleteObjectCommand({ Bucket: clientInfo.bucket, Key: testKey }),
   )
+}
+
+/** Size in bytes of an object in the organizer's bucket, or null if it can't be read. */
+export async function getR2ObjectSize(
+  { client, bucket }: OrganizadorR2Client,
+  r2Key: string,
+): Promise<number | null> {
+  try {
+    const head = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: r2Key }))
+    return head.ContentLength ?? null
+  } catch {
+    return null
+  }
 }

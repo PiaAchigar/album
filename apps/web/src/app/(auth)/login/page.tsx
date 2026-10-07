@@ -105,14 +105,12 @@ export default function LoginPage() {
                       <FormLabel className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                         Contraseña
                       </FormLabel>
-                      {/* Inert — no forgot-password flow exists yet. */}
-                      <span
-                        className="cursor-not-allowed text-xs font-medium text-muted-foreground/60"
-                        aria-disabled="true"
-                        title="Todavía no disponible"
+                      <Link
+                        href="/recuperar"
+                        className="text-xs font-medium text-primary underline-offset-4 hover:underline"
                       >
                         ¿Olvidaste tu contraseña?
-                      </span>
+                      </Link>
                     </div>
                     <FormControl>
                       <div className="relative">

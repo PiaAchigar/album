@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import Image from 'next/image'
-import { CheckCircle2, ImagePlus, UploadCloud } from 'lucide-react'
+import { CheckCircle2, ImagePlus, Lightbulb, UploadCloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   PORTADA_ACCEPT,
@@ -89,6 +89,23 @@ export function Paso2FotoPortada({ eventoId, onSuccess, onSkip }: Props) {
               Tamaño máximo: {PORTADA_MAX_SIZE_MB} MB
             </li>
           </ul>
+          <div className="space-y-2 rounded-md bg-amber-500/10 p-3 text-sm text-muted-foreground">
+            <p className="flex items-center gap-1.5 font-medium text-foreground">
+              <Lightbulb className="h-4 w-4 shrink-0 text-amber-500" aria-hidden="true" />
+              Consejos
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                Tus invitados la ven en el celular, ocupando casi toda la pantalla: una foto{' '}
+                <strong className="text-foreground">vertical o cuadrada</strong> queda mejor.
+              </li>
+              <li>
+                Dejá lo importante (caras, nombres) <strong className="text-foreground">en el centro o arriba</strong>:
+                abajo va escrito el nombre del evento.
+              </li>
+              <li>Mejor una foto luminosa y nítida que una oscura.</li>
+            </ul>
+          </div>
         </div>
 
         <div

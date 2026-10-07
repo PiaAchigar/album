@@ -6,6 +6,7 @@ import { Images, UserCheck, Users, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { actualizarLimites } from '@/app/(organizador)/actions/eventos.actions'
 import type { WizardData } from '../page'
+import { EstimadorAlmacenamiento } from '../_components/EstimadorAlmacenamiento'
 
 type LimitsData = Pick<
   WizardData,
@@ -79,7 +80,7 @@ export function Paso3Limites({ eventoId, defaultValues, onSuccess }: Props) {
     cantidad_invitados_totales: defaultValues.cantidad_invitados_totales ?? 100,
     limite_invitados_login: defaultValues.limite_invitados_login ?? 100,
     limite_fotos_por_invitado: defaultValues.limite_fotos_por_invitado ?? 10,
-    limite_videos_por_invitado: defaultValues.limite_videos_por_invitado ?? 2,
+    limite_videos_por_invitado: defaultValues.limite_videos_por_invitado ?? 1,
   })
 
   const [submitting, setSubmitting] = useState(false)
@@ -152,6 +153,12 @@ export function Paso3Limites({ eventoId, defaultValues, onSuccess }: Props) {
           onChange={set('limite_videos_por_invitado')}
         />
       </div>
+
+      <EstimadorAlmacenamiento
+        registros={values.limite_invitados_login}
+        fotosPorInvitado={values.limite_fotos_por_invitado}
+        videosPorInvitado={values.limite_videos_por_invitado}
+      />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

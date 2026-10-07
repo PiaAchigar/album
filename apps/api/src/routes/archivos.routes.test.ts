@@ -23,7 +23,9 @@ const getInvitadoPresignedUploadMock = vi.fn()
 const deleteR2ObjectMock = vi.fn()
 const getS3ClientForEventoMock = vi.fn()
 const getPresignedReadUrlMock = vi.fn()
+const getR2ObjectSizeMock = vi.fn()
 vi.mock('../lib/r2.js', () => ({
+  getR2ObjectSize: (...args: unknown[]) => getR2ObjectSizeMock(...args),
   getInvitadoPresignedUpload: (...args: unknown[]) => getInvitadoPresignedUploadMock(...args),
   deleteR2Object: (...args: unknown[]) => deleteR2ObjectMock(...args),
   getS3ClientForEvento: (...args: unknown[]) => getS3ClientForEventoMock(...args),
@@ -313,6 +315,40 @@ describe('POST /eventos/:slug/archivos/confirmar', () => {
     expect(valuesMock).toHaveBeenCalledWith(
       expect.objectContaining({ estado: 'aprobada' }),
     )
+  })
+
+  it('stores the real size read from R2 as tamano_bytes', async () => {
+    queueSelects([mockEvento])
+    const valuesMock = mockInsertReturning('arch-1')
+    getR2ObjectSizeMock.mockResolvedValue(812_345)
+
+    const res = await confirmar(
+      'boda-test-abc123',
+      { r2_key: 'eventos/evt-1/inv-1/foto.jpg', tipo: 'foto', extension: 'jpg' },
+      await authHeader(),
+    )
+
+    expect(res.status).toBe(201)
+    expect(getR2ObjectSizeMock).toHaveBeenCalledWith(
+      { client: {}, bucket: 'test-bucket' },
+      'eventos/evt-1/inv-1/foto.jpg',
+    )
+    expect(valuesMock).toHaveBeenCalledWith(expect.objectContaining({ tamano_bytes: 812_345 }))
+  })
+
+  it('still confirms the upload with tamano_bytes null when R2 cannot be reached', async () => {
+    queueSelects([mockEvento])
+    const valuesMock = mockInsertReturning('arch-1')
+    getS3ClientForEventoMock.mockRejectedValue(new Error('R2 down'))
+
+    const res = await confirmar(
+      'boda-test-abc123',
+      { r2_key: 'eventos/evt-1/inv-1/foto.jpg', tipo: 'foto', extension: 'jpg' },
+      await authHeader(),
+    )
+
+    expect(res.status).toBe(201)
+    expect(valuesMock).toHaveBeenCalledWith(expect.objectContaining({ tamano_bytes: null }))
   })
 
   it('returns 201 and increments videos_subidos for tipo video', async () => {
