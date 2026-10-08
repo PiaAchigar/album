@@ -2,8 +2,7 @@ import Link from 'next/link'
 
 /**
  * Footer for every non-guest surface (landing, auth, organizer panel,
- * legal pages). "Complexa IA" stays plain text until complexa.com.ar is
- * deployed — then it can become a link.
+ * legal pages).
  */
 export function SiteFooter() {
   const year = new Date().getFullYear()
@@ -13,7 +12,14 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center text-sm text-primary-foreground/70 sm:flex-row sm:justify-between sm:text-left">
         <p>
           © {year} Album · Hecho por{' '}
-          <span className="font-medium text-primary-foreground">Complexa IA</span>
+          <a
+            href="https://www.complexa.com.ar"
+            target="_blank"
+            rel="noopener"
+            className="font-medium text-primary-foreground underline-offset-4 hover:underline"
+          >
+            Complexa IA
+          </a>
         </p>
         <nav aria-label="Legales" className="flex flex-wrap justify-center gap-x-4 gap-y-1">
           <Link href="/terminos" className="underline-offset-4 hover:text-primary-foreground hover:underline">
