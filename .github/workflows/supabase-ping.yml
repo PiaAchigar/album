@@ -17,11 +17,14 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Ping /rest/v1/
+      # La raíz /rest/v1/ exige una secret key con las keys nuevas (sb_publishable_*)
+      # y devuelve 401. Leer una tabla sí funciona con la key pública y además pega
+      # en Postgres (RLS devuelve [] al anónimo), que es lo que cuenta como actividad.
+      - name: Ping /rest/v1/eventos
         run: |
           HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/")
+            "${{ secrets.SUPABASE_URL }}/rest/v1/eventos?select=id&limit=1")
 
           echo "HTTP status: $HTTP_STATUS"
 
